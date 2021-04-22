@@ -11,11 +11,13 @@ public class MapBasedKvsIndex<K, V> implements KvsIndex<K, V> {
 
     @Override
     public void onIndexedEntityUpdated(K key, V value) {
+
         index.put(key, value);
     }
 
     @Override
     public Optional<V> searchForKey(K key) {
+
         return Optional.ofNullable(index.get(key));
     }
 }
