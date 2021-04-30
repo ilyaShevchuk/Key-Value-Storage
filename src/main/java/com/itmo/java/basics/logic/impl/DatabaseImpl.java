@@ -2,8 +2,10 @@ package com.itmo.java.basics.logic.impl;
 
 import com.itmo.java.basics.exceptions.DatabaseException;
 import com.itmo.java.basics.index.impl.TableIndex;
+import com.itmo.java.basics.initialization.DatabaseInitializationContext;
 import com.itmo.java.basics.logic.Database;
 import com.itmo.java.basics.logic.Table;
+import lombok.Builder;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,16 +16,25 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+
 public class DatabaseImpl implements Database {
-    private static final Map<String, Table> tablesMap = new HashMap<>();
+    private final Map<String, Table> tablesMap;
     private final String name;
     private final Path baseDir;
 
     private DatabaseImpl(String dbName, Path databaseRoot) throws IOException {
         name = dbName;
         baseDir = Paths.get(databaseRoot.toString() + File.separator + dbName);
+        tablesMap = new HashMap<>();
         Files.createDirectory(baseDir);
     }
+
+    private DatabaseImpl(String dbName, Path databaseRoot, Map<String, Table> tablesMap) {
+        this.name = dbName;
+        this.baseDir = databaseRoot;
+        this.tablesMap = tablesMap;
+    }
+
 
     public static Database create(String dbName, Path databaseRoot) throws DatabaseException {
         if (dbName == null) {
@@ -34,6 +45,12 @@ public class DatabaseImpl implements Database {
         } catch (IOException e) {
             throw new DatabaseException("Failed to create database ", e);
         }
+    }
+
+    public static Database initializeFromContext(DatabaseInitializationContext context) {
+
+        return new DatabaseImpl(context.getDbName(), context.getDatabasePath(), context.getTables());
+
     }
 
     @Override

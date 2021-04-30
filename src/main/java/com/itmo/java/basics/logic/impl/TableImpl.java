@@ -2,8 +2,10 @@ package com.itmo.java.basics.logic.impl;
 
 import com.itmo.java.basics.exceptions.DatabaseException;
 import com.itmo.java.basics.index.impl.TableIndex;
+import com.itmo.java.basics.initialization.TableInitializationContext;
 import com.itmo.java.basics.logic.Segment;
 import com.itmo.java.basics.logic.Table;
+import lombok.Builder;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,9 +30,9 @@ public class TableImpl implements Table {
     private final Path tableRoot;
     private final TableIndex tableIndex;
     private final Map<String, Segment> segments;
-    private Segment lastSegment = null;
+    private Segment lastSegment;
 
-    private TableImpl(String tableName, Path pathToDatabaseRoot, TableIndex tbIndex) throws IOException {
+    public TableImpl(String tableName, Path pathToDatabaseRoot, TableIndex tbIndex) throws IOException {
         name = tableName;
         tableIndex = tbIndex;
         segments = new HashMap<String, Segment>();
@@ -38,14 +40,25 @@ public class TableImpl implements Table {
         Files.createDirectory(dir);
         tableRoot = dir;
     }
+    private TableImpl(String tableName, Path tablePath, TableIndex tbIndex, Segment lastSegment){
+        this.name = tableName;
+        this.tableIndex = tbIndex;
+        this.segments = new HashMap<String, Segment>();
+        this.tableRoot = tablePath;
+        this.lastSegment = lastSegment;
+
+    }
+
 
     public static Table create(String tableName, Path pathToDatabaseRoot, TableIndex tableIndex) throws DatabaseException {
-        try {
-            return new TableImpl(tableName, pathToDatabaseRoot, tableIndex);
-        } catch (IOException e) {
-            throw new DatabaseException("Can not create table", e);
-        }
+        return new CachingTable(tableName, pathToDatabaseRoot, tableIndex);
     }
+
+    public static Table initializeFromContext(TableInitializationContext context) {
+        return new TableImpl(context.getTableName(), context.getTablePath(), context.getTableIndex(),
+                context.getCurrentSegment());
+    }
+
 
     @Override
     public String getName() {
