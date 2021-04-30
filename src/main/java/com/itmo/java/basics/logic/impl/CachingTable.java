@@ -14,7 +14,7 @@ import java.util.Optional;
  */
 public class CachingTable implements Table {
     DatabaseCache cache;
-    private Table table;
+    private final Table table;
 
     public CachingTable(String tableName, Path pathToDatabaseRoot, TableIndex tableIndex) throws DatabaseException {
         try {

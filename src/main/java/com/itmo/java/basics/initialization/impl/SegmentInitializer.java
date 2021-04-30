@@ -9,12 +9,10 @@ import com.itmo.java.basics.logic.Segment;
 import com.itmo.java.basics.logic.impl.SegmentImpl;
 import com.itmo.java.basics.logic.io.DatabaseInputStream;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -61,14 +59,13 @@ public class SegmentInitializer implements Initializer {
                         .build();
                 try {
                     dbRecord = dbStream.readDbUnit();
-                }
-                catch(IOException e){
+                } catch (IOException e) {
                     dbRecord = Optional.empty();
                 }
             }
             Segment segment = SegmentImpl.initializeFromContext(context.currentSegmentContext());
             context.currentTableContext().updateCurrentSegment(segment);
-            for (String key : keysSet){
+            for (String key : keysSet) {
                 context.currentTableContext().getTableIndex().onIndexedEntityUpdated(key, segment);
             }
         } catch (IOException e) {
