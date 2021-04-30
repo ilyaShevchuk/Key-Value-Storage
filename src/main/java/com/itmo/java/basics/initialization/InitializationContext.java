@@ -2,6 +2,8 @@ package com.itmo.java.basics.initialization;
 
 import com.itmo.java.basics.console.ExecutionEnvironment;
 
+import java.nio.file.Path;
+
 public interface InitializationContext {
     /**
      * Возвращает текущее окружение.
