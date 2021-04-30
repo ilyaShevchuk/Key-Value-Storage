@@ -11,7 +11,6 @@ public class SegmentInitializationContextImpl implements SegmentInitializationCo
     private final String segmentName;
     private final Path segmentPath;
     private long currentSize;
-    private Path tablePath;
     private SegmentIndex index;
 
     public SegmentInitializationContextImpl(String segmentName, Path segmentPath, long currentSize, SegmentIndex index) {
@@ -24,7 +23,6 @@ public class SegmentInitializationContextImpl implements SegmentInitializationCo
     public SegmentInitializationContextImpl(String segmentName, Path tablePath, long currentSize) {
 
         this.segmentName = segmentName;
-        this.tablePath = tablePath;
         this.segmentPath = Paths.get(tablePath.toString() + File.separator + segmentName);
         this.currentSize = currentSize;
         this.index = new SegmentIndex();
@@ -53,7 +51,4 @@ public class SegmentInitializationContextImpl implements SegmentInitializationCo
         return currentSize;
     }
 
-    public void updateCurrentSize(int x ){
-        currentSize += x;
-    }
 }
