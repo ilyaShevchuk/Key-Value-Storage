@@ -5,7 +5,6 @@ import com.itmo.java.basics.initialization.TableInitializationContext;
 import com.itmo.java.basics.logic.Segment;
 
 import java.io.File;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class TableInitializationContextImpl implements TableInitializationContext {
@@ -40,11 +39,13 @@ public class TableInitializationContextImpl implements TableInitializationContex
 
     @Override
     public Segment getCurrentSegment() {
+
         return currentSegment;
     }
 
     @Override
     public void updateCurrentSegment(Segment segment) {
+
         currentSegment = segment;
     }
 }
