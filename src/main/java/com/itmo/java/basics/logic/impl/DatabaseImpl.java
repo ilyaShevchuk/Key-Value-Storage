@@ -5,6 +5,7 @@ import com.itmo.java.basics.index.impl.TableIndex;
 import com.itmo.java.basics.initialization.DatabaseInitializationContext;
 import com.itmo.java.basics.logic.Database;
 import com.itmo.java.basics.logic.Table;
+import lombok.Builder;
 
 import java.io.File;
 import java.io.IOException;
