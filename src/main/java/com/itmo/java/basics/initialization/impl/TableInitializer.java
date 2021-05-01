@@ -32,14 +32,14 @@ public class TableInitializer implements Initializer {
     public void perform(InitializationContext context) throws DatabaseException {
         Path workPath = context.currentTableContext().getTablePath();
         if (!Files.exists(context.currentTableContext().getTablePath())) {
-            throw new DatabaseException("Wrong path to table " + context.currentTableContext().getTableName());
+            throw new DatabaseException("The table does not exist " + context.currentTableContext().getTableName());
         }
-        ArrayList<String> segmentList = new ArrayList<>();
+        ArrayList<String> segmentNamesList = new ArrayList<>();
         for (final File fileEntry : Objects.requireNonNull(workPath.toFile().listFiles())) {
-            segmentList.add(fileEntry.getName());
+            segmentNamesList.add(fileEntry.getName());
         }
-        Collections.sort(segmentList);
-        for (final String currentSegmentName : segmentList) {
+        Collections.sort(segmentNamesList);
+        for (final String currentSegmentName : segmentNamesList) {
             segmentInitializer.perform(InitializationContextImpl.builder()
                     .executionEnvironment(context.executionEnvironment())
                     .currentDatabaseContext(context.currentDbContext())

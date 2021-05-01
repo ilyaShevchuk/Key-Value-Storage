@@ -31,7 +31,7 @@ public class TableImpl implements Table {
     private final Map<String, Segment> segments;
     private Segment lastSegment;
 
-    public TableImpl(String tableName, Path pathToDatabaseRoot, TableIndex tbIndex) throws IOException {
+    private TableImpl(String tableName, Path pathToDatabaseRoot, TableIndex tbIndex) throws IOException {
         name = tableName;
         tableIndex = tbIndex;
         segments = new HashMap<String, Segment>();
@@ -50,7 +50,11 @@ public class TableImpl implements Table {
 
 
     public static Table create(String tableName, Path pathToDatabaseRoot, TableIndex tableIndex) throws DatabaseException {
-        return new CachingTable(tableName, pathToDatabaseRoot, tableIndex);
+        try {
+            return new CachingTable(new TableImpl(tableName, pathToDatabaseRoot, tableIndex));
+        } catch (IOException e) {
+            throw new DatabaseException("Failed to create CachingTable ", e);
+        }
     }
 
     public static Table initializeFromContext(TableInitializationContext context) {
