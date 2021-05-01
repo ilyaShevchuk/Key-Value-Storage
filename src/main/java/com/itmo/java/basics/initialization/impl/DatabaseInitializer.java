@@ -39,10 +39,6 @@ public class DatabaseInitializer implements Initializer {
                 throw new DatabaseException("Can not open potential table with name - " + fileEntry.getName());
             }
             TableIndex tableIndex = new TableIndex();
-//            Table table = TableImpl.create(fileEntry.getName(),
-//                    initialContext.currentDbContext().getDatabasePath(), tableIndex);
-            // добавляем уже насыщенную контекстов в TableInitializer
-            // initialContext.currentDbContext().addTable(table);
             InitializationContext newContext = InitializationContextImpl.builder()
                     .executionEnvironment(initialContext.executionEnvironment())
                     .currentDatabaseContext(initialContext.currentDbContext())

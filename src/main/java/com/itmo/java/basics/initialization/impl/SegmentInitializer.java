@@ -44,7 +44,6 @@ public class SegmentInitializer implements Initializer {
             while (dbRecord.isPresent()) {
                 String key = new String(dbRecord.get().getKey());
                 keysSet.add(key);
-                // + dbRecord.size ?
                 context.currentSegmentContext().getIndex().onIndexedEntityUpdated(
                         key, new SegmentOffsetInfoImpl(context.currentSegmentContext().getCurrentSize()));
                 context = InitializationContextImpl.builder()
