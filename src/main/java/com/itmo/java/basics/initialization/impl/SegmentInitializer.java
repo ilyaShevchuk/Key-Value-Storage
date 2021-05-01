@@ -56,11 +56,7 @@ public class SegmentInitializer implements Initializer {
                                 context.currentSegmentContext().getCurrentSize() + dbRecord.get().size(),
                                 context.currentSegmentContext().getIndex()))
                         .build();
-                try {
-                    dbRecord = dbStream.readDbUnit();
-                } catch (IOException e) {
-                    dbRecord = Optional.empty();
-                }
+                dbRecord = dbStream.readDbUnit();
             }
             Segment segment = SegmentImpl.initializeFromContext(context.currentSegmentContext());
             context.currentTableContext().updateCurrentSegment(segment);
@@ -68,7 +64,8 @@ public class SegmentInitializer implements Initializer {
                 context.currentTableContext().getTableIndex().onIndexedEntityUpdated(key, segment);
             }
         } catch (IOException e) {
-            throw new DatabaseException("Problems with reading from segment", e);
+            throw new DatabaseException("Problems with reading from segment " +
+                    context.currentSegmentContext().getSegmentPath(), e);
         }
     }
 }

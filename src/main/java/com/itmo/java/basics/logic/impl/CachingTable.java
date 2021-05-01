@@ -13,15 +13,11 @@ import java.util.Optional;
  * Декоратор для таблицы. Кэширует данные
  */
 public class CachingTable implements Table {
-    DatabaseCache cache;
+    private final DatabaseCache cache;
     private final Table table;
 
-    public CachingTable(String tableName, Path pathToDatabaseRoot, TableIndex tableIndex) throws DatabaseException {
-        try {
-            table = new TableImpl(tableName, pathToDatabaseRoot, tableIndex);
-        } catch (IOException e) {
-            throw new DatabaseException("Failed to create CachingTable ", e);
-        }
+    public CachingTable(Table table){
+        this.table = table;
         cache = new DatabaseCacheImpl(5000);
     }
 

@@ -8,24 +8,26 @@ import java.util.Map;
 
 public class DatabaseCacheImpl implements DatabaseCache {
 
-    private final Map<String, byte[]> hashMap;
+    private final Map<String, byte[]> cacheMap;
 
     public DatabaseCacheImpl(Integer n) {
-        hashMap = new LinkedHashMap<>(n, 0.75f, true);
+        cacheMap = new LinkedHashMap<>(n, 0.75f, true){
+            protected boolean removeEldestEntry(Map.Entry eldest){ return size() > n;}
+        };
     }
 
     @Override
     public byte[] get(String key) {
-        return hashMap.get(key);
+        return cacheMap.get(key);
     }
 
     @Override
     public void set(String key, byte[] value) {
-        hashMap.put(key, value);
+        cacheMap.put(key, value);
     }
 
     @Override
     public void delete(String key) {
-        hashMap.remove(key);
+        cacheMap.remove(key);
     }
 }
