@@ -41,6 +41,5 @@ public class DatabaseInitializationContextImpl implements DatabaseInitialization
         if (!tableMap.containsKey(table.getName())) {
             tableMap.put(table.getName(), table);
         }
-        //else {}
     }
 }

@@ -44,9 +44,6 @@ public class DatabaseServerInitializer implements Initializer {
                 throw new DatabaseException("Can not open potential database with name " + fileEntry);
             }
             Optional<Database> db = context.executionEnvironment().getDatabase(fileEntry.getName());
-            // добавляем уже насыщуенню дб в DatabaseInitializer
-            // if (db.isEmpty()) {context.executionEnvironment().addDatabase(DatabaseImpl.create(fileEntry.getName(),
-            // workPath));}
             InitializationContext newContext = InitializationContextImpl.builder().currentDatabaseContext(
                     new DatabaseInitializationContextImpl(fileEntry.getName(), workPath)).executionEnvironment(
                     context.executionEnvironment()).build();
