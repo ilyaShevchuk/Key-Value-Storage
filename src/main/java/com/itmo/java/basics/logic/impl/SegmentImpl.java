@@ -3,6 +3,7 @@ package com.itmo.java.basics.logic.impl;
 import com.itmo.java.basics.exceptions.DatabaseException;
 import com.itmo.java.basics.index.impl.SegmentIndex;
 import com.itmo.java.basics.index.impl.SegmentOffsetInfoImpl;
+import com.itmo.java.basics.initialization.SegmentInitializationContext;
 import com.itmo.java.basics.logic.DatabaseRecord;
 import com.itmo.java.basics.logic.Segment;
 import com.itmo.java.basics.logic.WritableDatabaseRecord;
@@ -36,6 +37,12 @@ public class SegmentImpl implements Segment {
         offset = 0;
     }
 
+    private SegmentImpl(Path pathForWriting, SegmentIndex segmentIndex, long offset) {
+        this.pathForWriting = pathForWriting;
+        this.indexMap = segmentIndex;
+        this.offset = offset;
+    }
+
     static Segment create(String segmentName, Path tableRootPath) throws DatabaseException {
         try {
             return new SegmentImpl(Files.createFile(Path.of(tableRootPath.toString() + File.separator
@@ -59,6 +66,9 @@ public class SegmentImpl implements Segment {
             indexMap.onIndexedEntityUpdated(new String(record.getKey()), new SegmentOffsetInfoImpl(offset));
             return stream.write(record);
         }
+    }
+    public static Segment initializeFromContext(SegmentInitializationContext context) {
+        return new SegmentImpl(context.getSegmentPath(), context.getIndex(), context.getCurrentSize());
     }
 
     @Override
