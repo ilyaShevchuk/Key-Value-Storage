@@ -10,8 +10,8 @@ import java.nio.file.Paths;
 public class SegmentInitializationContextImpl implements SegmentInitializationContext {
     private final String segmentName;
     private final Path segmentPath;
-    private long currentSize;
-    private SegmentIndex index;
+    private final long currentSize;
+    private final SegmentIndex index;
 
     public SegmentInitializationContextImpl(String segmentName, Path segmentPath, long currentSize, SegmentIndex index) {
         this.segmentName = segmentName;
