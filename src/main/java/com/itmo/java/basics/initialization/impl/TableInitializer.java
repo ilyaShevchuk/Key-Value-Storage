@@ -35,7 +35,7 @@ public class TableInitializer implements Initializer {
         if (!Files.exists(context.currentTableContext().getTablePath())) {
             throw new DatabaseException("The table does not exist " + context.currentTableContext().getTableName());
         }
-        var filesArray = workPath.toFile().listFiles();
+        File[] filesArray = workPath.toFile().listFiles();
         Arrays.sort(Objects.requireNonNull(filesArray));
         for (final File currentSegmentFile : filesArray) {
             segmentInitializer.perform(InitializationContextImpl.builder()
