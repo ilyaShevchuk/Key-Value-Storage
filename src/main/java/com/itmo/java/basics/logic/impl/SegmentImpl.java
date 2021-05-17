@@ -43,7 +43,7 @@ public class SegmentImpl implements Segment {
         this.offset = offset;
     }
 
-    static Segment create(String segmentName, Path tableRootPath) throws DatabaseException {
+    public static Segment create(String segmentName, Path tableRootPath) throws DatabaseException {
         try {
             return new SegmentImpl(Files.createFile(Path.of(tableRootPath.toString() + File.separator
                     + segmentName)));
@@ -52,7 +52,7 @@ public class SegmentImpl implements Segment {
         }
     }
 
-    static String createSegmentName(String tableName) {
+    public static String createSegmentName(String tableName) {
         return tableName + "_" + System.currentTimeMillis();
     }
 
