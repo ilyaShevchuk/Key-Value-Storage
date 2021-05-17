@@ -10,7 +10,7 @@ public class DatabaseCacheImpl implements DatabaseCache {
     private final Map<String, byte[]> cacheMap;
 
     public DatabaseCacheImpl(Integer n) {
-        cacheMap = new lfsMap<>(n);
+        cacheMap = new LRUMap<>(n);
     }
 
     @Override
