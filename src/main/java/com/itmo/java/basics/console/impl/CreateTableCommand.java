@@ -8,6 +8,7 @@ import com.itmo.java.basics.exceptions.DatabaseException;
 import com.itmo.java.basics.logic.Database;
 import com.itmo.java.protocol.model.RespObject;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,6 +19,7 @@ public class CreateTableCommand implements DatabaseCommand {
     private static final int RIGHT_COUNT_OF_ARGS = 4;
     private final ExecutionEnvironment env;
     private final List<RespObject> commandArgs;
+
     /**
      * Создает команду
      * <br/>
@@ -56,7 +58,7 @@ public class CreateTableCommand implements DatabaseCommand {
             return DatabaseCommandResult.error(e);
         }
         return DatabaseCommandResult.success(String.format("Table %s was created in database %s", dbName,
-                commandArgs.get(DatabaseCommandArgPositions.TABLE_NAME.getPositionIndex()).asString()).getBytes());
+                commandArgs.get(DatabaseCommandArgPositions.TABLE_NAME.getPositionIndex()).asString()).getBytes(StandardCharsets.UTF_8));
 
     }
 }

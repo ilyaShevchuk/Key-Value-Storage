@@ -5,6 +5,8 @@ import com.itmo.java.protocol.model.RespBulkString;
 import com.itmo.java.protocol.model.RespError;
 import com.itmo.java.protocol.model.RespObject;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * Зафейленная команда
  */
@@ -34,6 +36,6 @@ public class FailedDatabaseCommandResult implements DatabaseCommandResult {
      */
     @Override
     public RespObject serialize() {
-        return new RespBulkString(message.getBytes());
+        return new RespBulkString(message.getBytes(StandardCharsets.UTF_8));
     }
 }
