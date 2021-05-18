@@ -2,6 +2,8 @@ package com.itmo.java.protocol.model;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PipedReader;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -14,8 +16,10 @@ public class RespArray implements RespObject {
      */
     public static final byte CODE = '*';
 
+    private final RespObject[] objects;
+
     public RespArray(RespObject... objects) {
-        //TODO implement
+        this.objects = objects;
     }
 
     /**
@@ -35,17 +39,24 @@ public class RespArray implements RespObject {
      */
     @Override
     public String asString() {
-        //TODO implement
-        return null;
+        StringBuilder result = new StringBuilder();
+        for(RespObject object : objects){
+            result.append(object.asString());
+            result.append(" ");
+        }
+        return String.valueOf(result.delete(result.length()-2, result.length() - 1));
     }
 
     @Override
     public void write(OutputStream os) throws IOException {
-        //TODO implement
+        os.write(CODE);
+        os.write(CRLF);
+        for(RespObject object : objects){
+            object.write(os);
+        }
     }
 
     public List<RespObject> getObjects() {
-        //TODO implement
-        return null;
+        return Arrays.asList(objects);
     }
 }
