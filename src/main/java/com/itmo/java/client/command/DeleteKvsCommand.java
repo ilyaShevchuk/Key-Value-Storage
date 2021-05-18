@@ -34,7 +34,7 @@ public class DeleteKvsCommand implements KvsCommand {
                 new RespBulkString(databaseName.getBytes(StandardCharsets.UTF_8)),
                 new RespBulkString(tableName.getBytes(StandardCharsets.UTF_8)),
                 new RespBulkString(key.getBytes(StandardCharsets.UTF_8))};
-        return null;
+        return new RespArray(objects);
     }
 
     @Override
