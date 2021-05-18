@@ -4,23 +4,29 @@ import com.itmo.java.basics.console.DatabaseCommandResult;
 import com.itmo.java.protocol.model.RespBulkString;
 import com.itmo.java.protocol.model.RespObject;
 
+import java.util.Arrays;
+
 /**
  * Результат успешной команды
  */
 public class SuccessDatabaseCommandResult implements DatabaseCommandResult {
 
-    private byte[] payload;
+    private final byte[] payload;
+
     public SuccessDatabaseCommandResult(byte[] payload) {
+
         this.payload = payload;
     }
 
     @Override
     public String getPayLoad() {
-        return new String(payload);
+
+        return Arrays.toString(payload);
     }
 
     @Override
     public boolean isSuccess() {
+
         return true;
     }
 
@@ -29,6 +35,7 @@ public class SuccessDatabaseCommandResult implements DatabaseCommandResult {
      */
     @Override
     public RespObject serialize() {
+
         return new RespBulkString(payload);
     }
 }
