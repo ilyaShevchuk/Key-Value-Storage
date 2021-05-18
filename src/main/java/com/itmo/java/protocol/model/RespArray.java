@@ -2,7 +2,7 @@ package com.itmo.java.protocol.model;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PipedReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
@@ -40,18 +40,19 @@ public class RespArray implements RespObject {
     @Override
     public String asString() {
         StringBuilder result = new StringBuilder();
-        for(RespObject object : objects){
+        for (RespObject object : objects) {
             result.append(object.asString());
             result.append(" ");
         }
-        return String.valueOf(result.delete(result.length()-2, result.length() - 1));
+        return String.valueOf(result.delete(result.length() - 2, result.length() - 1));
     }
 
     @Override
     public void write(OutputStream os) throws IOException {
         os.write(CODE);
+        os.write(String.valueOf(objects.length).getBytes(StandardCharsets.UTF_8));
         os.write(CRLF);
-        for(RespObject object : objects){
+        for (RespObject object : objects) {
             object.write(os);
         }
     }
