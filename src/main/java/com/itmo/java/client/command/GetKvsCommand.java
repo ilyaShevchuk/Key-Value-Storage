@@ -3,7 +3,6 @@ package com.itmo.java.client.command;
 import com.itmo.java.protocol.model.RespArray;
 import com.itmo.java.protocol.model.RespBulkString;
 import com.itmo.java.protocol.model.RespCommandId;
-import com.itmo.java.protocol.model.RespObject;
 
 import java.nio.charset.StandardCharsets;
 

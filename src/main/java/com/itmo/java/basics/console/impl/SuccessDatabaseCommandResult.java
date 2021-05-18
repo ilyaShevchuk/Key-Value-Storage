@@ -4,8 +4,6 @@ import com.itmo.java.basics.console.DatabaseCommandResult;
 import com.itmo.java.protocol.model.RespBulkString;
 import com.itmo.java.protocol.model.RespObject;
 
-import java.util.Arrays;
-
 /**
  * Результат успешной команды
  */

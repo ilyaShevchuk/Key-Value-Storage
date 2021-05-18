@@ -5,7 +5,6 @@ import com.itmo.java.basics.exceptions.DatabaseException;
 import com.itmo.java.basics.initialization.InitializationContext;
 import com.itmo.java.basics.initialization.impl.DatabaseServerInitializer;
 import com.itmo.java.basics.initialization.impl.InitializationContextImpl;
-import com.itmo.java.basics.logic.Database;
 import com.itmo.java.protocol.model.RespArray;
 import lombok.Builder;
 
@@ -17,11 +16,11 @@ import java.util.concurrent.Executors;
 public class DatabaseServer {
 
     private final ExecutionEnvironment serverEnv;
-    private InitializationContext context;
     private final DatabaseServerInitializer initializer;
-    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private InitializationContext context;
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-    private DatabaseServer(ExecutionEnvironment env, DatabaseServerInitializer initializer){
+    private DatabaseServer(ExecutionEnvironment env, DatabaseServerInitializer initializer) {
         this.serverEnv = env;
         this.initializer = initializer;
     }
