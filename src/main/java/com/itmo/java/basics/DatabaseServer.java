@@ -1,18 +1,13 @@
 package com.itmo.java.basics;
 
 import com.itmo.java.basics.console.*;
-import com.itmo.java.basics.console.impl.GetKeyCommand;
 import com.itmo.java.basics.exceptions.DatabaseException;
 import com.itmo.java.basics.initialization.InitializationContext;
 import com.itmo.java.basics.initialization.impl.DatabaseServerInitializer;
 import com.itmo.java.basics.initialization.impl.InitializationContextImpl;
 import com.itmo.java.protocol.model.RespArray;
-import com.itmo.java.protocol.model.RespObject;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 
-import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -42,9 +37,10 @@ public class DatabaseServer {
     public CompletableFuture<DatabaseCommandResult> executeNextCommand(RespArray message) {
         return CompletableFuture.supplyAsync(() -> {
             var command = DatabaseCommands.valueOf(message.getObjects().get(
-                    DatabaseCommandArgPositions.COMMAND_NAME.getPositionIndex()).asString());
+                    DatabaseCommandArgPositions.COMMAND_NAME.getPositionIndex()).asString()).getCommand(serverEnv,
+                    message.getObjects());
 
-            return command.getCommand(serverEnv, message.getObjects()).execute();
+            return command.execute();
         }, executorService);
     }
 
