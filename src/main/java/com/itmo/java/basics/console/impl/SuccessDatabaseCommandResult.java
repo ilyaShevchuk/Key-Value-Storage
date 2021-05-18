@@ -21,7 +21,7 @@ public class SuccessDatabaseCommandResult implements DatabaseCommandResult {
     @Override
     public String getPayLoad() {
 
-        return Arrays.toString(payload);
+        return (payload != null) ? new String(payload) : null;
     }
 
     @Override
