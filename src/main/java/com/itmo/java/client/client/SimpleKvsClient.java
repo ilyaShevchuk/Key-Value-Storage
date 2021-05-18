@@ -1,11 +1,15 @@
 package com.itmo.java.client.client;
 
+import com.itmo.java.client.command.*;
 import com.itmo.java.client.connection.KvsConnection;
+import com.itmo.java.client.exception.ConnectionException;
 import com.itmo.java.client.exception.DatabaseExecutionException;
 
 import java.util.function.Supplier;
 
 public class SimpleKvsClient implements KvsClient {
+    private final String dbName;
+    private final Supplier<KvsConnection> connectionSupplier;
 
     /**
      * Конструктор
@@ -14,36 +18,62 @@ public class SimpleKvsClient implements KvsClient {
      * @param connectionSupplier метод создания подключения к базе
      */
     public SimpleKvsClient(String databaseName, Supplier<KvsConnection> connectionSupplier) {
-        //TODO implement
+        this.dbName = databaseName;
+        this.connectionSupplier = connectionSupplier;
     }
 
     @Override
     public String createDatabase() throws DatabaseExecutionException {
-        //TODO implement
-        return null;
+        KvsCommand command = new CreateDatabaseKvsCommand(dbName);
+        try{
+            return connectionSupplier.get().send(command.getCommandId(), command.serialize()).asString();
+        } catch (ConnectionException e){
+            throw new DatabaseExecutionException(String.format("Failed to create-database Command in %s " +
+                    "with KvsConnection", dbName), e);
+        }
     }
 
     @Override
     public String createTable(String tableName) throws DatabaseExecutionException {
-        //TODO implement
-        return null;
+        KvsCommand command = new CreateTableKvsCommand(dbName, tableName);
+        try{
+            return connectionSupplier.get().send(command.getCommandId(), command.serialize()).asString();
+        } catch (ConnectionException e){
+            throw new DatabaseExecutionException(String.format("Failed to create-table Command %s in database %s " +
+                    "with KvsConnection", tableName, dbName), e);
+        }
     }
 
     @Override
     public String get(String tableName, String key) throws DatabaseExecutionException {
-        //TODO implement
-        return null;
+        KvsCommand command = new GetKvsCommand(dbName, tableName, key);
+        try{
+            return connectionSupplier.get().send(command.getCommandId(), command.serialize()).asString();
+        } catch (ConnectionException e){
+            throw new DatabaseExecutionException(String.format("Failed to get key %s Command in %s in database %s " +
+                    "with KvsConnection", key, tableName, dbName), e);
+        }
     }
 
     @Override
     public String set(String tableName, String key, String value) throws DatabaseExecutionException {
-        //TODO implement
-        return null;
+        KvsCommand command = new SetKvsCommand(dbName, tableName, key, value);
+        try{
+            return connectionSupplier.get().send(command.getCommandId(), command.serialize()).asString();
+        } catch (ConnectionException e){
+            throw new DatabaseExecutionException(String.format("Failed to set key %s and value %s Command in %s " +
+                    "in database %s with KvsConnection", key, value, tableName, dbName), e);
+        }
     }
 
     @Override
     public String delete(String tableName, String key) throws DatabaseExecutionException {
-        //TODO implement
-        return null;
+        KvsCommand command = new DeleteKvsCommand(dbName, tableName, key);
+        try{
+            return connectionSupplier.get().send(command.getCommandId(), command.serialize()).asString();
+        } catch (ConnectionException e){
+            throw new DatabaseExecutionException(String.format("Failed to delete key %s Command in %s in database %s " +
+                    "with KvsConnection", key, tableName, dbName), e);
+        }
     }
 }

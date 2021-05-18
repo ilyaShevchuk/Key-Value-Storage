@@ -14,10 +14,10 @@ public class RespBulkString implements RespObject {
 
     public static final int NULL_STRING_SIZE = -1;
 
-    public static final RespBulkString NULL_STRING = new RespBulkString(null);
+    private final byte[] data;
 
     public RespBulkString(byte[] data) {
-        //TODO implement
+        this.data = data;
     }
 
     /**
@@ -37,12 +37,24 @@ public class RespBulkString implements RespObject {
      */
     @Override
     public String asString() {
-        //TODO implement
-        return null;
+        if (data == null) {
+            return null;
+        } else {
+            return new String(data);
+        }
     }
 
     @Override
     public void write(OutputStream os) throws IOException {
-        //TODO implement
+        os.write(CODE);
+        if (data == null) {
+            os.write(NULL_STRING_SIZE);
+            os.write(CRLF);
+        } else {
+            os.write(data.length);
+            os.write(CRLF);
+            os.write(data);
+            os.write(CRLF);
+        }
     }
 }
