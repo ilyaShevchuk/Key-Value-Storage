@@ -5,6 +5,7 @@ import com.itmo.java.basics.exceptions.DatabaseException;
 import com.itmo.java.basics.initialization.InitializationContext;
 import com.itmo.java.basics.initialization.impl.DatabaseServerInitializer;
 import com.itmo.java.basics.initialization.impl.InitializationContextImpl;
+import com.itmo.java.basics.logic.Database;
 import com.itmo.java.protocol.model.RespArray;
 import lombok.Builder;
 
@@ -16,9 +17,14 @@ import java.util.concurrent.Executors;
 public class DatabaseServer {
 
     private final ExecutionEnvironment serverEnv;
-    private final InitializationContext context;
+    private InitializationContext context;
     private final DatabaseServerInitializer initializer;
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+    private DatabaseServer(ExecutionEnvironment env, DatabaseServerInitializer initializer){
+        this.serverEnv = env;
+        this.initializer = initializer;
+    }
 
     /**
      * Конструктор
@@ -31,12 +37,12 @@ public class DatabaseServer {
     public static DatabaseServer initialize(ExecutionEnvironment env, DatabaseServerInitializer initializer) throws DatabaseException {
         InitializationContext context = InitializationContextImpl.builder().executionEnvironment(env).build();
         initializer.perform(context);
-        return DatabaseServer.builder().serverEnv(env).initializer(initializer).build();
+        return new DatabaseServer(env, initializer);
     }
 
     public CompletableFuture<DatabaseCommandResult> executeNextCommand(RespArray message) {
         return CompletableFuture.supplyAsync(() -> {
-            var command = DatabaseCommands.valueOf(message.getObjects().get(
+            DatabaseCommand command = DatabaseCommands.valueOf(message.getObjects().get(
                     DatabaseCommandArgPositions.COMMAND_NAME.getPositionIndex()).asString()).getCommand(serverEnv,
                     message.getObjects());
 
