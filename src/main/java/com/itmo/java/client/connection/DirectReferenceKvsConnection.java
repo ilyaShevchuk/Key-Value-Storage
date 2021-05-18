@@ -16,7 +16,7 @@ import java.util.concurrent.ExecutionException;
  */
 public class DirectReferenceKvsConnection implements KvsConnection {
 
-    private DatabaseServer server;
+    private final DatabaseServer server;
 
     public DirectReferenceKvsConnection(DatabaseServer databaseServer) {
         this.server = databaseServer;
@@ -29,9 +29,11 @@ public class DirectReferenceKvsConnection implements KvsConnection {
         try {
             return dbCommandResult.get().serialize();
         } catch (ExecutionException e) {
-            throw new ConnectionException(e.getMessage(), e);
+            throw new ConnectionException(String.format("Execution error , when we try to serialize commandResult %d",
+                    commandId), e);
         } catch (InterruptedException e) {
-            throw new ConnectionException(e.getMessage(), e);
+            throw new ConnectionException(String.format("Interrupted error , when we try to serialize commandResult %d"
+                    , commandId), e);
         }
     }
 
