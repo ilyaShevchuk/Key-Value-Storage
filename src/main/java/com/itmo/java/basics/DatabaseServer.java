@@ -12,7 +12,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Builder
 public class DatabaseServer {
 
     private final ExecutionEnvironment serverEnv;
