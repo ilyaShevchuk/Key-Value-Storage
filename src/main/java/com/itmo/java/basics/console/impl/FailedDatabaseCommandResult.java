@@ -36,6 +36,6 @@ public class FailedDatabaseCommandResult implements DatabaseCommandResult {
      */
     @Override
     public RespObject serialize() {
-        return new RespBulkString(message.getBytes(StandardCharsets.UTF_8));
+        return new RespError(message.getBytes(StandardCharsets.UTF_8));
     }
 }
