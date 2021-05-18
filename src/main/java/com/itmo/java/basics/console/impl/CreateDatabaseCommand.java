@@ -52,7 +52,7 @@ public class CreateDatabaseCommand implements DatabaseCommand {
     public DatabaseCommandResult execute() {
         String dbName = commandArgs.get(DatabaseCommandArgPositions.DATABASE_NAME.getPositionIndex()).asString();
         try {
-            env.addDatabase(DatabaseImpl.create(dbName, env.getWorkingPath()));
+            env.addDatabase(this.factory.createNonExistent(dbName, env.getWorkingPath()));
         } catch (DatabaseException e) {
             return DatabaseCommandResult.error(e);
         }
