@@ -56,6 +56,6 @@ public class CreateDatabaseCommand implements DatabaseCommand {
         } catch (DatabaseException e) {
             return DatabaseCommandResult.error(e);
         }
-        return DatabaseCommandResult.success(String.format("Database %s created", dbName).getBytes());
+        return DatabaseCommandResult.success(String.format("Database %s created", dbName).getBytes(StandardCharsets.UTF_8));
     }
 }

@@ -2,6 +2,7 @@ package com.itmo.java.protocol.model;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -38,7 +39,9 @@ public class RespCommandId implements RespObject {
     @Override
     public void write(OutputStream os) throws IOException {
         os.write(CODE);
-        os.write(ID.toString().getBytes(StandardCharsets.UTF_8));
+        ByteBuffer byteBuffer = ByteBuffer.allocate(4);
+        byteBuffer.putInt(ID);
+        os.write(byteBuffer.array());
         os.write(CRLF);
     }
 }
