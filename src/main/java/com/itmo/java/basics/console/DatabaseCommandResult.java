@@ -15,6 +15,7 @@ public interface DatabaseCommandResult extends DatabaseApiSerializable {
      * @return успешный результат выполнения команды, который был сформирован
      */
     static DatabaseCommandResult success(byte[] result) {
+
         return new SuccessDatabaseCommandResult(result);
     }
 
@@ -25,6 +26,7 @@ public interface DatabaseCommandResult extends DatabaseApiSerializable {
      * @return результат зафейленный команды, при выполнении которой произошла ошибка
      */
     static DatabaseCommandResult error(String message) {
+
         return new FailedDatabaseCommandResult(message);
     }
 
@@ -36,10 +38,9 @@ public interface DatabaseCommandResult extends DatabaseApiSerializable {
      * @return результат команды, при выполнении которой произошла ошибка
      */
     static DatabaseCommandResult error(Exception exception) {
-        if (exception.getMessage() != null){
+        if (exception.getMessage() != null) {
             return new FailedDatabaseCommandResult(exception.getMessage());
-        }
-        else{
+        } else {
             return new FailedDatabaseCommandResult(Arrays.toString(exception.getStackTrace()));
         }
     }

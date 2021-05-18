@@ -2,6 +2,7 @@ package com.itmo.java.protocol.model;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Строка
@@ -48,10 +49,10 @@ public class RespBulkString implements RespObject {
     public void write(OutputStream os) throws IOException {
         os.write(CODE);
         if (data == null) {
-            os.write(NULL_STRING_SIZE);
+            os.write(String.valueOf(NULL_STRING_SIZE).getBytes(StandardCharsets.UTF_8));
             os.write(CRLF);
         } else {
-            os.write(data.length);
+            os.write(String.valueOf(data.length).getBytes(StandardCharsets.UTF_8));
             os.write(CRLF);
             os.write(data);
             os.write(CRLF);
