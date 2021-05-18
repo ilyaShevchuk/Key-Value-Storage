@@ -3,7 +3,6 @@ package com.itmo.java.protocol.model;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 
 /**
  * Id
@@ -15,7 +14,7 @@ public class RespCommandId implements RespObject {
      */
     public static final byte CODE = '!';
 
-    private Integer ID;
+    private final Integer ID;
 
     public RespCommandId(int commandId) {
         ID = commandId;

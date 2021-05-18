@@ -5,14 +5,11 @@ import com.itmo.java.basics.console.DatabaseCommandArgPositions;
 import com.itmo.java.basics.console.DatabaseCommandResult;
 import com.itmo.java.basics.console.ExecutionEnvironment;
 import com.itmo.java.basics.exceptions.DatabaseException;
-import com.itmo.java.basics.logic.Database;
 import com.itmo.java.basics.logic.DatabaseFactory;
-import com.itmo.java.basics.logic.impl.DatabaseImpl;
 import com.itmo.java.protocol.model.RespObject;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Команда для создания базы данных
