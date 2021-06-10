@@ -23,60 +23,53 @@ public class SimpleKvsClient implements KvsClient {
         this.connectionSupplier = connectionSupplier;
     }
 
+    private RespObject generateExceptionByCommand(KvsCommand command, String exceptionMessage)
+            throws DatabaseExecutionException {
+        RespObject result;
+        try {
+            result = connectionSupplier.get().send(command.getCommandId(), command.serialize());
+        } catch (ConnectionException e) {
+            throw new DatabaseExecutionException(exceptionMessage, e);
+        }
+        if (result.isError()) {
+            throw new DatabaseExecutionException(result.asString());
+        }
+        return result;
+    }
+
     @Override
     public String createDatabase() throws DatabaseExecutionException {
-        KvsCommand command = new CreateDatabaseKvsCommand(dbName);
-        try {
-            return connectionSupplier.get().send(command.getCommandId(), command.serialize()).asString();
-        } catch (ConnectionException e) {
-            throw new DatabaseExecutionException(String.format("Failed to create-database Command in %s " +
-                    "with KvsConnection", dbName), e);
-        }
+        final String excMessage = String.format("Failed to create-database Command in %s " +
+                "with KvsConnection", dbName);
+        return generateExceptionByCommand(new CreateDatabaseKvsCommand(dbName), excMessage).asString();
     }
 
     @Override
     public String createTable(String tableName) throws DatabaseExecutionException {
-        KvsCommand command = new CreateTableKvsCommand(dbName, tableName);
-        RespObject result;
-        try {
-            return connectionSupplier.get().send(command.getCommandId(), command.serialize()).asString();
-        } catch (ConnectionException e) {
-            throw new DatabaseExecutionException(String.format("Failed to create-table Command %s in database %s " +
-                    "with KvsConnection", tableName, dbName), e);
-        }
+        final String excMessage = String.format("Failed to create-table Command %s in database %s " +
+                "with KvsConnection", tableName, dbName);
+        return generateExceptionByCommand(new CreateTableKvsCommand(dbName, tableName), excMessage).asString();
     }
 
     @Override
     public String get(String tableName, String key) throws DatabaseExecutionException {
-        KvsCommand command = new GetKvsCommand(dbName, tableName, key);
-        try {
-            return connectionSupplier.get().send(command.getCommandId(), command.serialize()).asString();
-        } catch (ConnectionException e) {
-            throw new DatabaseExecutionException(String.format("Failed to get key %s Command in %s in database %s " +
-                    "with KvsConnection", key, tableName, dbName), e);
-        }
+        final String excMessage = String.format("Failed to get key %s Command in %s in database %s " +
+                "with KvsConnection", key, tableName, dbName);
+        return generateExceptionByCommand(new GetKvsCommand(dbName, tableName, key), excMessage).asString();
     }
 
     @Override
     public String set(String tableName, String key, String value) throws DatabaseExecutionException {
-        KvsCommand command = new SetKvsCommand(dbName, tableName, key, value);
-        RespObject result;
-        try {
-            return connectionSupplier.get().send(command.getCommandId(), command.serialize()).asString();
-        } catch (ConnectionException e) {
-            throw new DatabaseExecutionException(String.format("Failed to set key %s and value %s Command in %s " +
-                    "in database %s with KvsConnection", key, value, tableName, dbName), e);
-        }
+        final String excMessage = String.format("Failed to set key %s and value %s Command in %s " +
+                "in database %s with KvsConnection", key, value, tableName, dbName);
+        return generateExceptionByCommand(new SetKvsCommand(dbName, tableName, key, value), excMessage).asString();
     }
 
     @Override
     public String delete(String tableName, String key) throws DatabaseExecutionException {
-        KvsCommand command = new DeleteKvsCommand(dbName, tableName, key);
-        try {
-            return connectionSupplier.get().send(command.getCommandId(), command.serialize()).asString();
-        } catch (ConnectionException e) {
-            throw new DatabaseExecutionException(String.format("Failed to delete key %s Command in %s in database %s " +
-                    "with KvsConnection", key, tableName, dbName), e);
-        }
+        final String excMessage = String.format("Failed to delete key %s Command in %s in database %s " +
+                "with KvsConnection", key, tableName, dbName);
+        return generateExceptionByCommand(new DeleteKvsCommand(dbName, tableName, key), excMessage).asString();
+
     }
 }
