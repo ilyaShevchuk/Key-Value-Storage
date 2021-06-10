@@ -26,17 +26,12 @@ public class SimpleKvsClient implements KvsClient {
     @Override
     public String createDatabase() throws DatabaseExecutionException {
         KvsCommand command = new CreateDatabaseKvsCommand(dbName);
-        RespObject result;
         try {
-            result = connectionSupplier.get().send(command.getCommandId(), command.serialize());
+            return connectionSupplier.get().send(command.getCommandId(), command.serialize()).asString();
         } catch (ConnectionException e) {
             throw new DatabaseExecutionException(String.format("Failed to create-database Command in %s " +
                     "with KvsConnection", dbName), e);
         }
-        if (result.isError()) {
-            throw new DatabaseExecutionException(result.asString());
-        }
-        return result.asString();
     }
 
     @Override
@@ -44,32 +39,22 @@ public class SimpleKvsClient implements KvsClient {
         KvsCommand command = new CreateTableKvsCommand(dbName, tableName);
         RespObject result;
         try {
-            result = connectionSupplier.get().send(command.getCommandId(), command.serialize());
+            return connectionSupplier.get().send(command.getCommandId(), command.serialize()).asString();
         } catch (ConnectionException e) {
             throw new DatabaseExecutionException(String.format("Failed to create-table Command %s in database %s " +
                     "with KvsConnection", tableName, dbName), e);
         }
-
-        if (result.isError()) {
-            throw new DatabaseExecutionException(result.asString());
-        }
-        return result.asString();
     }
 
     @Override
     public String get(String tableName, String key) throws DatabaseExecutionException {
         KvsCommand command = new GetKvsCommand(dbName, tableName, key);
-        RespObject result;
         try {
-            result = connectionSupplier.get().send(command.getCommandId(), command.serialize());
+            return connectionSupplier.get().send(command.getCommandId(), command.serialize()).asString();
         } catch (ConnectionException e) {
             throw new DatabaseExecutionException(String.format("Failed to get key %s Command in %s in database %s " +
                     "with KvsConnection", key, tableName, dbName), e);
         }
-        if (result.isError()) {
-            throw new DatabaseExecutionException(result.asString());
-        }
-        return result.asString();
     }
 
     @Override
@@ -77,30 +62,21 @@ public class SimpleKvsClient implements KvsClient {
         KvsCommand command = new SetKvsCommand(dbName, tableName, key, value);
         RespObject result;
         try {
-            result = connectionSupplier.get().send(command.getCommandId(), command.serialize());
+            return connectionSupplier.get().send(command.getCommandId(), command.serialize()).asString();
         } catch (ConnectionException e) {
             throw new DatabaseExecutionException(String.format("Failed to set key %s and value %s Command in %s " +
                     "in database %s with KvsConnection", key, value, tableName, dbName), e);
         }
-        if (result.isError()) {
-            throw new DatabaseExecutionException(result.asString());
-        }
-        return result.asString();
     }
 
     @Override
     public String delete(String tableName, String key) throws DatabaseExecutionException {
         KvsCommand command = new DeleteKvsCommand(dbName, tableName, key);
-        RespObject result;
         try {
-            result = connectionSupplier.get().send(command.getCommandId(), command.serialize());
+            return connectionSupplier.get().send(command.getCommandId(), command.serialize()).asString();
         } catch (ConnectionException e) {
             throw new DatabaseExecutionException(String.format("Failed to delete key %s Command in %s in database %s " +
                     "with KvsConnection", key, tableName, dbName), e);
         }
-        if (result.isError()) {
-            throw new DatabaseExecutionException(result.asString());
-        }
-        return result.asString();
     }
 }

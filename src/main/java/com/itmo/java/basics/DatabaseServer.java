@@ -15,13 +15,10 @@ import java.util.concurrent.Executors;
 public class DatabaseServer {
 
     private final ExecutionEnvironment serverEnv;
-    private final DatabaseServerInitializer initializer;
-    private InitializationContext context;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     private DatabaseServer(ExecutionEnvironment env, DatabaseServerInitializer initializer) {
         this.serverEnv = env;
-        this.initializer = initializer;
     }
 
     /**

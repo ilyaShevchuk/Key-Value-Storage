@@ -16,9 +16,9 @@ import java.util.List;
  */
 public class CreateDatabaseCommand implements DatabaseCommand {
     private static final int RIGHT_COUNT_OF_ARGS = 3;
-    ExecutionEnvironment env;
-    List<RespObject> commandArgs;
-    DatabaseFactory factory;
+    private final ExecutionEnvironment env;
+    private final List<RespObject> commandArgs;
+    private final DatabaseFactory factory;
 
     /**
      * Создает команду.
@@ -33,7 +33,8 @@ public class CreateDatabaseCommand implements DatabaseCommand {
      */
     public CreateDatabaseCommand(ExecutionEnvironment env, DatabaseFactory factory, List<RespObject> commandArgs) {
         if (commandArgs.size() != RIGHT_COUNT_OF_ARGS) {
-            throw new IllegalArgumentException("Count of Args is wrong");
+            throw new IllegalArgumentException(String.format("Count of Args is wrong, expected %d, received %d",
+                    RIGHT_COUNT_OF_ARGS, commandArgs.size()));
         }
         this.env = env;
         this.factory = factory;
@@ -49,7 +50,7 @@ public class CreateDatabaseCommand implements DatabaseCommand {
     public DatabaseCommandResult execute() {
         String dbName = commandArgs.get(DatabaseCommandArgPositions.DATABASE_NAME.getPositionIndex()).asString();
         try {
-            env.addDatabase(this.factory.createNonExistent(dbName, env.getWorkingPath()));
+            env.addDatabase(factory.createNonExistent(dbName, env.getWorkingPath()));
         } catch (DatabaseException e) {
             return DatabaseCommandResult.error(e);
         }
