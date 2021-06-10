@@ -31,7 +31,8 @@ public class SetKeyCommand implements DatabaseCommand {
      */
     public SetKeyCommand(ExecutionEnvironment env, List<RespObject> commandArgs) {
         if (commandArgs.size() != RIGHT_COUNT_OF_ARGS) {
-            throw new IllegalArgumentException("Count of Args is wrong");
+            throw new IllegalArgumentException(String.format("Count of Args is wrong, expected %d, received %d",
+                    RIGHT_COUNT_OF_ARGS, commandArgs.size()));
         }
         this.env = env;
         this.commandArgs = commandArgs;
