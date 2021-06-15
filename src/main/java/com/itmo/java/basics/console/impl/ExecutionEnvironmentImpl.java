@@ -11,8 +11,8 @@ import java.util.Map;
 import java.util.Optional;
 
 public class ExecutionEnvironmentImpl implements ExecutionEnvironment {
-    private final String workingPath;
     private static final Map<String, Database> databaseMap = new HashMap<>();
+    private final String workingPath;
 
     public ExecutionEnvironmentImpl(DatabaseConfig config) {
         this.workingPath = config.getWorkingPath();
@@ -20,10 +20,9 @@ public class ExecutionEnvironmentImpl implements ExecutionEnvironment {
 
     @Override
     public Optional<Database> getDatabase(String name) {
-        if (!databaseMap.containsKey(name)){
+        if (!databaseMap.containsKey(name)) {
             return Optional.empty();
-        }
-        else {
+        } else {
             return Optional.of(databaseMap.get(name));
         }
     }

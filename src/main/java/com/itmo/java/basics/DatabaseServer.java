@@ -1,11 +1,12 @@
 package com.itmo.java.basics;
 
-import com.itmo.java.basics.console.DatabaseCommand;
-import com.itmo.java.basics.console.DatabaseCommandResult;
-import com.itmo.java.basics.console.ExecutionEnvironment;
+import com.itmo.java.basics.console.*;
 import com.itmo.java.basics.exceptions.DatabaseException;
+import com.itmo.java.basics.initialization.InitializationContext;
 import com.itmo.java.basics.initialization.impl.DatabaseServerInitializer;
+import com.itmo.java.basics.initialization.impl.InitializationContextImpl;
 import com.itmo.java.protocol.model.RespArray;
+import lombok.Builder;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -13,7 +14,12 @@ import java.util.concurrent.Executors;
 
 public class DatabaseServer {
 
-    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final ExecutionEnvironment serverEnv;
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+    private DatabaseServer(ExecutionEnvironment env, DatabaseServerInitializer initializer) {
+        this.serverEnv = env;
+    }
 
     /**
      * Конструктор
@@ -22,20 +28,24 @@ public class DatabaseServer {
      * @param initializer готовый чейн инициализации
      * @throws DatabaseException если произошла ошибка инициализации
      */
+
     public static DatabaseServer initialize(ExecutionEnvironment env, DatabaseServerInitializer initializer) throws DatabaseException {
-        //TODO implement
-        return null;
+        InitializationContext context = InitializationContextImpl.builder().executionEnvironment(env).build();
+        initializer.perform(context);
+        return new DatabaseServer(env, initializer);
     }
 
     public CompletableFuture<DatabaseCommandResult> executeNextCommand(RespArray message) {
         return CompletableFuture.supplyAsync(() -> {
-            // code here...
-            return null;
+            DatabaseCommand command = DatabaseCommands.valueOf(message.getObjects().get(
+                    DatabaseCommandArgPositions.COMMAND_NAME.getPositionIndex()).asString()).getCommand(serverEnv,
+                    message.getObjects());
+
+            return command.execute();
         }, executorService);
     }
 
     public CompletableFuture<DatabaseCommandResult> executeNextCommand(DatabaseCommand command) {
-        //TODO implement
-        return null;
+        return CompletableFuture.supplyAsync(command::execute, executorService);
     }
 }

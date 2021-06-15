@@ -4,15 +4,21 @@ import com.itmo.java.basics.console.DatabaseCommand;
 import com.itmo.java.basics.console.DatabaseCommandArgPositions;
 import com.itmo.java.basics.console.DatabaseCommandResult;
 import com.itmo.java.basics.console.ExecutionEnvironment;
+import com.itmo.java.basics.exceptions.DatabaseException;
 import com.itmo.java.basics.logic.DatabaseFactory;
 import com.itmo.java.protocol.model.RespObject;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
  * Команда для создания базы данных
  */
 public class CreateDatabaseCommand implements DatabaseCommand {
+    private static final int RIGHT_COUNT_OF_ARGS = 3;
+    private final ExecutionEnvironment env;
+    private final List<RespObject> commandArgs;
+    private final DatabaseFactory factory;
 
     /**
      * Создает команду.
@@ -26,7 +32,13 @@ public class CreateDatabaseCommand implements DatabaseCommand {
      * @throws IllegalArgumentException если передано неправильное количество аргументов
      */
     public CreateDatabaseCommand(ExecutionEnvironment env, DatabaseFactory factory, List<RespObject> commandArgs) {
-        //TODO implement
+        if (commandArgs.size() != RIGHT_COUNT_OF_ARGS) {
+            throw new IllegalArgumentException(String.format("Count of Args is wrong, expected %d, received %d",
+                    RIGHT_COUNT_OF_ARGS, commandArgs.size()));
+        }
+        this.env = env;
+        this.factory = factory;
+        this.commandArgs = commandArgs;
     }
 
     /**
@@ -36,7 +48,12 @@ public class CreateDatabaseCommand implements DatabaseCommand {
      */
     @Override
     public DatabaseCommandResult execute() {
-        //TODO implement
-        return null;
+        String dbName = commandArgs.get(DatabaseCommandArgPositions.DATABASE_NAME.getPositionIndex()).asString();
+        try {
+            env.addDatabase(factory.createNonExistent(dbName, env.getWorkingPath()));
+        } catch (DatabaseException e) {
+            return DatabaseCommandResult.error(e);
+        }
+        return DatabaseCommandResult.success(String.format("Database %s created", dbName).getBytes(StandardCharsets.UTF_8));
     }
 }
