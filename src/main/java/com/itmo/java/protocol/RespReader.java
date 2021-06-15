@@ -1,14 +1,12 @@
 package com.itmo.java.protocol;
 
-import com.itmo.java.protocol.model.RespArray;
-import com.itmo.java.protocol.model.RespBulkString;
-import com.itmo.java.protocol.model.RespCommandId;
-import com.itmo.java.protocol.model.RespError;
-import com.itmo.java.protocol.model.RespObject;
+import com.itmo.java.protocol.model.*;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 
 public class RespReader implements AutoCloseable {
 
@@ -17,17 +15,34 @@ public class RespReader implements AutoCloseable {
      */
     private static final byte CR = '\r';
     private static final byte LF = '\n';
+    private final InputStream is;
+
+    private int readInt() throws IOException {
+        String textCount = "";
+        while (true) {
+            int x1 = is.read();
+            if (x1 == -1){
+                throw new EOFException("Can not read more");
+            }
+            if (!Character.isDigit(x1) && (char)x1 != '-') {
+                break;
+            }
+            textCount += (char)x1;
+        }
+        return Integer.parseInt(textCount);
+    }
 
     public RespReader(InputStream is) {
-        //TODO implement
+        this.is = is;
     }
 
     /**
      * Есть ли следующий массив в стриме?
      */
     public boolean hasArray() throws IOException {
-        //TODO implement
-        return false;
+        int isStarCode = is.read();
+        is.skip(4);
+        return (isStarCode == "*".hashCode());
     }
 
     /**
@@ -38,8 +53,19 @@ public class RespReader implements AutoCloseable {
      * @throws IOException  при ошибке чтения
      */
     public RespObject readObject() throws IOException {
-        //TODO implement
-        return null;
+        char objectType = (char) is.read();
+        switch (objectType) {
+            case ('*'):
+                return readArray();
+            case ('-'):
+                return readError();
+            case ('$'):
+                return readBulkString();
+            case ('!'):
+                return readCommandId();
+            default:
+                throw new IOException("No such RESP object code like that" + objectType);
+        }
     }
 
     /**
@@ -49,8 +75,27 @@ public class RespReader implements AutoCloseable {
      * @throws IOException  при ошибке чтения
      */
     public RespError readError() throws IOException {
-        //TODO implement
-        return null;
+        //Skip bytes for CR an LF
+        String errorText = "";
+        while (true) {
+            int currentByte = is.read();
+            if (currentByte == -1){
+                throw new EOFException("Can not read more");
+            }
+            if ((char)currentByte == '\\') {
+                String threeNextBytes = new String(is.readNBytes(3));
+                if (threeNextBytes.length() != 3){
+                    throw new EOFException("Can not read more from " + is.toString());
+                }
+                if (threeNextBytes.equals("r\\n")) {
+                    break;
+                }
+                errorText += threeNextBytes;
+                break;
+            }
+            errorText += (char)currentByte;
+        }
+        return new RespError(errorText.getBytes(StandardCharsets.UTF_8));
     }
 
     /**
@@ -59,9 +104,19 @@ public class RespReader implements AutoCloseable {
      * @throws EOFException если stream пустой
      * @throws IOException  при ошибке чтения
      */
-    public RespBulkString readBulkString() throws IOException {
-        //TODO implement
-        return null;
+    public RespBulkString readBulkString () throws IOException {
+        int count = readInt();
+        //Skip bytes for CR an LF
+        //is.skipNBytes(3);
+        long skipped = is.skip(4);
+        if (count == -1){
+            return RespBulkString.NULL_STRING;
+        }
+        byte[] bulkString = is.readNBytes(count);
+        if (bulkString.length != count){
+            throw new EOFException("Can not read more than " + new String(bulkString));
+        }
+        return new RespBulkString(bulkString);
     }
 
     /**
@@ -70,9 +125,15 @@ public class RespReader implements AutoCloseable {
      * @throws EOFException если stream пустой
      * @throws IOException  при ошибке чтения
      */
-    public RespArray readArray() throws IOException {
-        //TODO implement
-        return null;
+    public RespArray readArray () throws IOException {
+        int count = readInt();
+        //is.skipNBytes(4);
+        long skipped = is.skip(4);
+        ArrayList<RespObject> objects = new ArrayList<>();
+        for (int i=0;i < count;i++){
+            objects.add(readObject());
+        }
+        return new RespArray(objects);
     }
 
     /**
@@ -81,14 +142,16 @@ public class RespReader implements AutoCloseable {
      * @throws EOFException если stream пустой
      * @throws IOException  при ошибке чтения
      */
-    public RespCommandId readCommandId() throws IOException {
-        //TODO implement
-        return null;
+    public RespCommandId readCommandId () throws IOException {
+        int commandId = readInt();
+        //is.skipNBytes(4);
+        long skipped = is.skip(4);
+        return new RespCommandId(commandId);
     }
 
 
     @Override
-    public void close() throws IOException {
-        //TODO implement
+    public void close () throws IOException {
+        is.close();
     }
 }
