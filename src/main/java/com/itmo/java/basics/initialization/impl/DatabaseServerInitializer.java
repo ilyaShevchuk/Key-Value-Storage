@@ -9,8 +9,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class DatabaseServerInitializer implements Initializer {
 
@@ -39,15 +42,23 @@ public class DatabaseServerInitializer implements Initializer {
             }
         }
 
-        for (final File fileEntry : Objects.requireNonNull(workPath.toFile().listFiles())) {
-            if (!Files.exists(fileEntry.toPath())) {
-                throw new DatabaseException("Can not open potential database with name " + fileEntry);
+        try (final Stream<Path> walk = Files.walk(workPath, 1)) {
+            List<Path> databasesPath = walk.filter(Files::isDirectory).collect(Collectors.toList());
+            databasesPath.remove(0);
+
+            for (final Path databasePath : databasesPath) {
+                final DatabaseInitializationContextImpl databaseInitializationContext
+                        = new DatabaseInitializationContextImpl(databasePath.getFileName().toString(), workPath);
+
+                dbInitializer.perform(
+                        new InitializationContextImpl(
+                                context.executionEnvironment(), databaseInitializationContext,
+                                context.currentTableContext(), context.currentSegmentContext()
+                        )
+                );
             }
-            Optional<Database> db = context.executionEnvironment().getDatabase(fileEntry.getName());
-            InitializationContext newContext = InitializationContextImpl.builder().currentDatabaseContext(
-                    new DatabaseInitializationContextImpl(fileEntry.getName(), workPath)).executionEnvironment(
-                    context.executionEnvironment()).build();
-            dbInitializer.perform(newContext);
+        } catch (IOException exception) {
+            throw new DatabaseException("Working directory walking error: " + workPath, exception);
         }
     }
 }

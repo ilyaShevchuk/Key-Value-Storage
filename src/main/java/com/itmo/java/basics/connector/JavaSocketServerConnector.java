@@ -1,8 +1,15 @@
 package com.itmo.java.basics.connector;
 
 import com.itmo.java.basics.DatabaseServer;
+import com.itmo.java.basics.config.ConfigLoader;
+import com.itmo.java.basics.config.DatabaseServerConfig;
 import com.itmo.java.basics.config.ServerConfig;
 import com.itmo.java.basics.console.DatabaseCommandResult;
+import com.itmo.java.basics.console.impl.ExecutionEnvironmentImpl;
+import com.itmo.java.basics.initialization.impl.DatabaseInitializer;
+import com.itmo.java.basics.initialization.impl.DatabaseServerInitializer;
+import com.itmo.java.basics.initialization.impl.SegmentInitializer;
+import com.itmo.java.basics.initialization.impl.TableInitializer;
 import com.itmo.java.basics.resp.CommandReader;
 import com.itmo.java.protocol.RespReader;
 import com.itmo.java.protocol.RespWriter;
@@ -39,6 +46,12 @@ public class JavaSocketServerConnector implements Closeable {
 
     public static void main(String[] args) throws Exception {
         // можнно запускать прямо здесь
+        ConfigLoader configLoader = new ConfigLoader();
+        DatabaseServerConfig config = configLoader.readConfig();
+        DatabaseServer dbServer = DatabaseServer.initialize(new ExecutionEnvironmentImpl(config.getDbConfig()),
+                new DatabaseServerInitializer(new DatabaseInitializer(new TableInitializer(new SegmentInitializer()))));
+        JavaSocketServerConnector connector = new JavaSocketServerConnector(dbServer, config.getServerConfig());
+        connector.start();
     }
 
     /**
@@ -63,10 +76,10 @@ public class JavaSocketServerConnector implements Closeable {
      */
     @Override
     public void close() {
-        connectionAcceptorExecutor.shutdownNow();
-        clientIOWorkers.shutdownNow();
         try {
             serverSocket.close();
+            connectionAcceptorExecutor.shutdownNow();
+            clientIOWorkers.shutdownNow();
         } catch (IOException e) {
             throw new RuntimeException("Can not close server socket" + serverSocket.toString(), e);
         }
