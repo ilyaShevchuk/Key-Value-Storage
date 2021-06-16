@@ -13,20 +13,19 @@ import java.net.Socket;
  * С помощью {@link RespWriter} и {@link RespReader} читает/пишет в сокет
  */
 public class SocketKvsConnection implements KvsConnection {
-    final ConnectionConfig config;
-    final Socket socket;
-    final RespWriter respWriter;
-    final RespReader respReader;
+    ConnectionConfig config;
+    Socket socket;
+    RespWriter respWriter;
+    RespReader respReader;
 
     public SocketKvsConnection(ConnectionConfig config) {
         this.config = config;
-
         try {
             socket = new Socket(config.getHost(), config.getPort());
             respWriter = new RespWriter(socket.getOutputStream());
             respReader = new RespReader(socket.getInputStream());
-        } catch (IOException exception) {
-            throw new RuntimeException("Creation socket error", exception);
+        } catch (IOException e) {
+            throw new RuntimeException("Creation socket error", e);
         }
     }
 
@@ -44,10 +43,9 @@ public class SocketKvsConnection implements KvsConnection {
 
         try {
             respWriter.write(command);
-
             return respReader.readObject();
-        } catch (IOException exception) {
-            throw new ConnectionException("Connection exception", exception);
+        } catch (IOException e) {
+            throw new ConnectionException("Write/read connection exception", e);
         }
     }
 
@@ -60,8 +58,8 @@ public class SocketKvsConnection implements KvsConnection {
             respWriter.close();
             respReader.close();
             socket.close();
-        } catch (IOException exception) {
-            throw new RuntimeException("Closing client socket error", exception);
+        } catch (IOException e) {
+            throw new RuntimeException("Error when try to close Writer, reader, socket", e);
         }
     }
 }

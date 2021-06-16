@@ -43,7 +43,7 @@ public class RespBulkString implements RespObject {
         if (data == null) {
             return null;
         } else {
-            return new String(data);
+            return new String(data, StandardCharsets.UTF_8);
         }
     }
 

@@ -82,18 +82,17 @@ public class RespReader implements AutoCloseable {
      * @throws IOException  при ошибке чтения
      */
     public RespObject readObject() throws IOException {
-        char objectType = (char) is.read();
-        switch (objectType) {
-            case ('*'):
-                return readArray();
-            case ('-'):
-                return readError();
-            case ('$'):
-                return readBulkString();
-            case ('!'):
-                return readCommandId();
+        switch (readByte()) {
+            case RespError.CODE:
+                return this.readError();
+            case RespBulkString.CODE:
+                return this.readBulkString();
+            case RespArray.CODE:
+                return this.readArray();
+            case RespCommandId.CODE:
+                return this.readCommandId();
             default:
-                throw new IOException("No such RESP object code like that" + objectType);
+                throw new IOException("Invalid object code");
         }
     }
 
@@ -103,6 +102,7 @@ public class RespReader implements AutoCloseable {
      * @throws EOFException если stream пустой
      * @throws IOException  при ошибке чтения
      */
+    //todo maybe need to change
     public RespError readError() throws IOException {
         byte symbol = readByte();
         List<Byte> symbols = new ArrayList<>();

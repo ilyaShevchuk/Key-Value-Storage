@@ -3,15 +3,11 @@ package com.itmo.java.basics.initialization.impl;
 import com.itmo.java.basics.exceptions.DatabaseException;
 import com.itmo.java.basics.initialization.InitializationContext;
 import com.itmo.java.basics.initialization.Initializer;
-import com.itmo.java.basics.logic.Database;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -43,12 +39,12 @@ public class DatabaseServerInitializer implements Initializer {
         }
 
         try (final Stream<Path> walk = Files.walk(workPath, 1)) {
-            List<Path> databasesPath = walk.filter(Files::isDirectory).collect(Collectors.toList());
-            databasesPath.remove(0);
+            List<Path> dbPaths = walk.filter(Files::isDirectory).collect(Collectors.toList());
+            dbPaths.remove(0);
 
-            for (final Path databasePath : databasesPath) {
+            for (final Path dbPath : dbPaths) {
                 final DatabaseInitializationContextImpl databaseInitializationContext
-                        = new DatabaseInitializationContextImpl(databasePath.getFileName().toString(), workPath);
+                        = new DatabaseInitializationContextImpl(dbPath.getFileName().toString(), workPath);
 
                 dbInitializer.perform(
                         new InitializationContextImpl(
