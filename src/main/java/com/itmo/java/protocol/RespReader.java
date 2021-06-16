@@ -5,8 +5,10 @@ import com.itmo.java.protocol.model.*;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
 
 public class RespReader implements AutoCloseable {
 
@@ -16,6 +18,10 @@ public class RespReader implements AutoCloseable {
     private static final byte CR = '\r';
     private static final byte LF = '\n';
     private final InputStream is;
+
+    public RespReader(InputStream is) {
+        this.is = is;
+    }
 
     private byte readByte() throws IOException {
         final int symbol = is.read();
@@ -27,20 +33,37 @@ public class RespReader implements AutoCloseable {
         return (byte) symbol;
     }
 
-    private int readInt() throws IOException {
-        String textCount = "";
-        while (true) {
-            byte x1 = readByte();
-            if (!Character.isDigit(x1) && (char)x1 != '-') {
-                break;
-            }
-            textCount += (char)x1;
+    private void readCR() throws IOException {
+        if (this.readByte() != CR) {
+            throw new IOException("Wrong format");
         }
-        return Integer.parseInt(textCount);
     }
 
-    public RespReader(InputStream is) {
-        this.is = is;
+    private void readLF() throws IOException {
+        if (this.readByte() != LF) {
+            throw new IOException("Wrong format");
+        }
+    }
+
+    private byte[] readBytesForInt() throws IOException {
+        byte symbol = this.readByte();
+
+        final List<Byte> symbols = new ArrayList<>();
+
+        while (symbol != CR) {
+            symbols.add(symbol);
+            symbol = this.readByte();
+        }
+
+        final int symbolsCount = symbols.size();
+
+        final byte[] bytes = new byte[symbolsCount];
+
+        for (int i = 0; i < symbolsCount; i++) {
+            bytes[i] = symbols.get(i);
+        }
+
+        return bytes;
     }
 
     /**
@@ -81,27 +104,34 @@ public class RespReader implements AutoCloseable {
      * @throws IOException  при ошибке чтения
      */
     public RespError readError() throws IOException {
-        //Skip bytes for CR an LF
-        String errorText = "";
-        while (true) {
-            int currentByte = is.read();
-            if (currentByte == -1){
-                throw new EOFException("Can not read more");
-            }
-            if ((char)currentByte == '\\') {
-                String threeNextBytes = new String(is.readNBytes(3));
-                if (threeNextBytes.length() != 3){
-                    throw new EOFException("Can not read more from " + is.toString());
+        byte symbol = readByte();
+        List<Byte> symbols = new ArrayList<>();
+        boolean isEndOfText = false;
+
+        while (!isEndOfText) {
+            while (symbol == CR) {
+                symbol = readByte();
+
+                if (symbol == LF) {
+                    isEndOfText = true;
+                } else {
+                    symbols.add(CR);
                 }
-                if (threeNextBytes.equals("r\\n")) {
-                    break;
-                }
-                errorText += threeNextBytes;
-                break;
             }
-            errorText += (char)currentByte;
+
+            if (!isEndOfText) {
+                symbols.add(symbol);
+                symbol = this.readByte();
+            }
         }
-        return new RespError(errorText.getBytes(StandardCharsets.UTF_8));
+        int symbolsCount = symbols.size();
+        byte[] bytes = new byte[symbolsCount];
+
+        for (int i = 0; i < symbolsCount; i++) {
+            bytes[i] = symbols.get(i);
+        }
+
+        return new RespError(bytes);
     }
 
     /**
@@ -110,19 +140,19 @@ public class RespReader implements AutoCloseable {
      * @throws EOFException если stream пустой
      * @throws IOException  при ошибке чтения
      */
-    public RespBulkString readBulkString () throws IOException {
-        int count = readInt();
-        //Skip bytes for CR an LF
-        //is.skipNBytes(3);
-        long skipped = is.skip(4);
-        if (count == -1){
+    public RespBulkString readBulkString() throws IOException {
+        int count = Integer.parseInt(new String(readBytesForInt(), StandardCharsets.UTF_8));
+        readLF();
+        if (count == RespBulkString.NULL_STRING_SIZE) {
             return RespBulkString.NULL_STRING;
         }
-        byte[] bulkString = is.readNBytes(count);
-        if (bulkString.length != count){
-            throw new EOFException("Can not read more than " + new String(bulkString));
+        final byte[] data = is.readNBytes(count);
+        if (data.length != count) {
+            throw new EOFException("End of stream");
         }
-        return new RespBulkString(bulkString);
+        readCR();
+        readLF();
+        return new RespBulkString(data);
     }
 
     /**
@@ -131,13 +161,12 @@ public class RespReader implements AutoCloseable {
      * @throws EOFException если stream пустой
      * @throws IOException  при ошибке чтения
      */
-    public RespArray readArray () throws IOException {
-        int count = readInt();
-        //is.skipNBytes(4);
-        long skipped = is.skip(4);
-        ArrayList<RespObject> objects = new ArrayList<>();
-        for (int i=0;i < count;i++){
-            objects.add(readObject());
+    public RespArray readArray() throws IOException {
+        int size = Integer.parseInt(new String(readBytesForInt(), StandardCharsets.UTF_8));
+        readLF();
+        RespObject[] objects = new RespObject[size];
+        for (int i = 0; i <size; i++) {
+            objects[i] = readObject();
         }
         return new RespArray(objects);
     }
@@ -148,16 +177,22 @@ public class RespReader implements AutoCloseable {
      * @throws EOFException если stream пустой
      * @throws IOException  при ошибке чтения
      */
-    public RespCommandId readCommandId () throws IOException {
-        int commandId = readInt();
-        //is.skipNBytes(4);
-        long skipped = is.skip(4);
+    public RespCommandId readCommandId() throws IOException {
+        int intSize = 4;
+        byte[] bytes = is.readNBytes(intSize);
+        if (bytes.length != intSize) {
+            throw new EOFException("End of stream");
+        }
+        int commandId = ByteBuffer.wrap(bytes).getInt();
+        this.readCR();
+        this.readLF();
+
         return new RespCommandId(commandId);
     }
 
 
     @Override
-    public void close () throws IOException {
+    public void close() throws IOException {
         is.close();
     }
 }
