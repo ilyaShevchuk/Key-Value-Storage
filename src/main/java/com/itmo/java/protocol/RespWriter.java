@@ -18,7 +18,7 @@ public class RespWriter implements AutoCloseable{
      * Записывает в output stream объект
      */
     public void write(RespObject object) throws IOException {
-        os.write(object.asString().getBytes(StandardCharsets.UTF_8));
+        object.write(os);
     }
 
     @Override

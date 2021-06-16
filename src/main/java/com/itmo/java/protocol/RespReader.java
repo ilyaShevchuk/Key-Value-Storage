@@ -17,13 +17,20 @@ public class RespReader implements AutoCloseable {
     private static final byte LF = '\n';
     private final InputStream is;
 
+    private byte readByte() throws IOException {
+        final int symbol = is.read();
+
+        if (symbol == -1) {
+            throw new EOFException("End of stream");
+        }
+
+        return (byte) symbol;
+    }
+
     private int readInt() throws IOException {
         String textCount = "";
         while (true) {
-            int x1 = is.read();
-            if (x1 == -1){
-                throw new EOFException("Can not read more");
-            }
+            byte x1 = readByte();
             if (!Character.isDigit(x1) && (char)x1 != '-') {
                 break;
             }
@@ -40,8 +47,8 @@ public class RespReader implements AutoCloseable {
      * Есть ли следующий массив в стриме?
      */
     public boolean hasArray() throws IOException {
-        int isStarCode = is.read();
-        return (isStarCode == "*".hashCode());
+        int code = is.read();
+        return (code == RespArray.CODE);
     }
 
     /**

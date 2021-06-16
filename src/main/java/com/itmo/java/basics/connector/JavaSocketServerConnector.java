@@ -2,13 +2,11 @@ package com.itmo.java.basics.connector;
 
 import com.itmo.java.basics.DatabaseServer;
 import com.itmo.java.basics.config.ServerConfig;
-import com.itmo.java.basics.console.DatabaseCommand;
 import com.itmo.java.basics.console.DatabaseCommandResult;
 import com.itmo.java.basics.resp.CommandReader;
 import com.itmo.java.protocol.RespReader;
 import com.itmo.java.protocol.RespWriter;
 
-import javax.xml.crypto.Data;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -41,7 +39,11 @@ public class JavaSocketServerConnector implements Closeable {
         this.serverSocket = new ServerSocket(config.getPort());
     }
 
-     /**
+    public static void main(String[] args) throws Exception {
+        // можнно запускать прямо здесь
+    }
+
+    /**
      * Начинает слушать заданный порт, начинает аксептить клиентские сокеты. На каждый из них начинает клиентскую таску
      */
     public void start() {
@@ -54,7 +56,6 @@ public class JavaSocketServerConnector implements Closeable {
                 } catch (IOException e) {
                     break;
                 }
-                //task.close();
             }
         });
     }
@@ -64,16 +65,13 @@ public class JavaSocketServerConnector implements Closeable {
      */
     @Override
     public void close() {
+        connectionAcceptorExecutor.shutdownNow();
+        clientIOWorkers.shutdownNow();
         try {
             serverSocket.close();
         } catch (IOException e) {
-            //todo
+            throw new RuntimeException("Can not close server socket" + serverSocket.toString(), e);
         }
-    }
-
-
-    public static void main(String[] args) throws Exception {
-        // можнно запускать прямо здесь
     }
 
     /**
@@ -81,8 +79,9 @@ public class JavaSocketServerConnector implements Closeable {
      */
     static class ClientTask implements Runnable, Closeable {
 
-        private Socket clientSocket;
-        private DatabaseServer server;
+        private final Socket clientSocket;
+        private final DatabaseServer server;
+
         /**
          * @param client клиентский сокет
          * @param server сервер, на котором исполняется задача
@@ -101,15 +100,14 @@ public class JavaSocketServerConnector implements Closeable {
          */
         @Override
         public void run() {
-            try(CommandReader reader = new CommandReader(new RespReader(clientSocket.getInputStream()),
-                    server.getEnv()); RespWriter writer = new RespWriter(clientSocket.getOutputStream())) {
-                while(reader.hasNextCommand()){
+            try {
+                CommandReader reader = new CommandReader(new RespReader(clientSocket.getInputStream()), server.getEnv());
+                RespWriter writer = new RespWriter(clientSocket.getOutputStream());
+                while (reader.hasNextCommand()) {
                     DatabaseCommandResult result = server.executeNextCommand(reader.readCommand()).get();
                     writer.write(result.serialize());
                 }
             } catch (IOException | InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -122,7 +120,7 @@ public class JavaSocketServerConnector implements Closeable {
             try {
                 clientSocket.close();
             } catch (IOException e) {
-                //todo
+                throw new RuntimeException("Can not close client socket" + clientSocket.toString(), e);
             }
         }
     }

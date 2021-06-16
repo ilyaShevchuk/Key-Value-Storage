@@ -17,8 +17,7 @@ public class ConfigLoader {
      * По умолчанию читает из server.properties
      */
     public ConfigLoader() {
-        fileName = "src" + File.separator + "main" + File.separator + "resources" + File.separator
-                + "server.properties";
+        fileName = "server.properties";
     }
 
     /**
