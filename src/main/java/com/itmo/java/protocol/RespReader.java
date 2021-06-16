@@ -41,7 +41,6 @@ public class RespReader implements AutoCloseable {
      */
     public boolean hasArray() throws IOException {
         int isStarCode = is.read();
-        is.skip(4);
         return (isStarCode == "*".hashCode());
     }
 
