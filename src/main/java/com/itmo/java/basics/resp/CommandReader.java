@@ -27,13 +27,6 @@ public class CommandReader implements AutoCloseable {
      * Есть ли следующая команда в ридере?
      */
     public boolean hasNextCommand() throws IOException {
-//        RespObject object = reader.readObject();
-//        if (object instanceof RespArray) {
-//            List<RespObject> objects = ((RespArray) object).getObjects();
-//            if (objects.get(0) instanceof RespCommandId){
-//                return true;
-//            }
-//        }
         return reader.hasArray();
     }
 

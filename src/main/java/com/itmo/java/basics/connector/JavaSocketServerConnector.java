@@ -27,7 +27,6 @@ public class JavaSocketServerConnector implements Closeable {
 
     private final ServerSocket serverSocket;
     private final DatabaseServer databaseServer;
-    private final ServerConfig config;
     private final ExecutorService connectionAcceptorExecutor = Executors.newSingleThreadExecutor();
 
     /**
@@ -35,7 +34,6 @@ public class JavaSocketServerConnector implements Closeable {
      */
     public JavaSocketServerConnector(DatabaseServer databaseServer, ServerConfig config) throws IOException {
         this.databaseServer = databaseServer;
-        this.config = config;
         this.serverSocket = new ServerSocket(config.getPort());
     }
 
@@ -54,7 +52,7 @@ public class JavaSocketServerConnector implements Closeable {
                     ClientTask task = new ClientTask(socket, databaseServer);
                     clientIOWorkers.submit(task);
                 } catch (IOException e) {
-                    break;
+                    System.out.println("Error on server while accepting " + e.getMessage());
                 }
             }
         });
