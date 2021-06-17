@@ -102,7 +102,6 @@ public class RespReader implements AutoCloseable {
      * @throws EOFException если stream пустой
      * @throws IOException  при ошибке чтения
      */
-    //todo maybe need to change
     public RespError readError() throws IOException {
         byte symbol = readByte();
         List<Byte> symbols = new ArrayList<>();
