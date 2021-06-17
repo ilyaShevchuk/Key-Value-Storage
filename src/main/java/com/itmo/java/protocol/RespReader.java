@@ -124,14 +124,7 @@ public class RespReader implements AutoCloseable {
                 symbol = this.readByte();
             }
         }
-        int symbolsCount = symbols.size();
-        byte[] bytes = new byte[symbolsCount];
-
-        for (int i = 0; i < symbolsCount; i++) {
-            bytes[i] = symbols.get(i);
-        }
-
-        return new RespError(bytes);
+        return new RespError(symbols);
     }
 
     /**
