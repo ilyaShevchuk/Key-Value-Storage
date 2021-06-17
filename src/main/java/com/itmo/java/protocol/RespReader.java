@@ -47,18 +47,18 @@ public class RespReader implements AutoCloseable {
 
     private byte[] readBytesForInt() throws IOException {
         byte symbol = readByte();
-
         final List<Byte> symbols = new ArrayList<>();
-
         while (symbol != CR) {
             symbols.add(symbol);
             symbol = readByte();
         }
-        int symbolsCount = symbols.size();
-        byte[] bytes = new byte[symbolsCount];
+
+        final int symbolsCount = symbols.size();
+        final byte[] bytes = new byte[symbolsCount];
         for (int i = 0; i < symbolsCount; i++) {
             bytes[i] = symbols.get(i);
         }
+
         return bytes;
     }
 
@@ -84,7 +84,7 @@ public class RespReader implements AutoCloseable {
             case RespBulkString.CODE:
                 return readBulkString();
             case RespArray.CODE:
-                return readArray();
+                return  readArray();
             case RespCommandId.CODE:
                 return readCommandId();
             default:
@@ -101,18 +101,18 @@ public class RespReader implements AutoCloseable {
     public RespError readError() throws IOException {
         byte symbol = readByte();
         List<Byte> symbols = new ArrayList<>();
-        boolean isEndOfText = false;
-        while (!isEndOfText) {
+        boolean textEnd = false;
+        while (!textEnd) {
             while (symbol == CR) {
                 symbol = readByte();
 
                 if (symbol == LF) {
-                    isEndOfText = true;
+                    textEnd = true;
                 } else {
                     symbols.add(CR);
                 }
             }
-            if (!isEndOfText) {
+            if (!textEnd) {
                 symbols.add(symbol);
                 symbol = readByte();
             }
@@ -151,7 +151,7 @@ public class RespReader implements AutoCloseable {
         int size = Integer.parseInt(new String(readBytesForInt(), StandardCharsets.UTF_8));
         skipLF();
         RespObject[] objects = new RespObject[size];
-        for (int i = 0; i <size; i++) {
+        for (int i = 0; i < size; i++) {
             objects[i] = readObject();
         }
         return new RespArray(objects);
