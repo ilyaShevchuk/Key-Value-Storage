@@ -33,36 +33,32 @@ public class RespReader implements AutoCloseable {
         return (byte) symbol;
     }
 
-    private void readCR() throws IOException {
-        if (this.readByte() != CR) {
+    private void skipCR() throws IOException {
+        if (readByte() != CR) {
             throw new IOException("Wrong format");
         }
     }
 
-    private void readLF() throws IOException {
-        if (this.readByte() != LF) {
+    private void skipLF() throws IOException {
+        if (readByte() != LF) {
             throw new IOException("Wrong format");
         }
     }
 
     private byte[] readBytesForInt() throws IOException {
-        byte symbol = this.readByte();
+        byte symbol = readByte();
 
         final List<Byte> symbols = new ArrayList<>();
 
         while (symbol != CR) {
             symbols.add(symbol);
-            symbol = this.readByte();
+            symbol = readByte();
         }
-
-        final int symbolsCount = symbols.size();
-
-        final byte[] bytes = new byte[symbolsCount];
-
+        int symbolsCount = symbols.size();
+        byte[] bytes = new byte[symbolsCount];
         for (int i = 0; i < symbolsCount; i++) {
             bytes[i] = symbols.get(i);
         }
-
         return bytes;
     }
 
@@ -84,13 +80,13 @@ public class RespReader implements AutoCloseable {
     public RespObject readObject() throws IOException {
         switch (readByte()) {
             case RespError.CODE:
-                return this.readError();
+                return readError();
             case RespBulkString.CODE:
-                return this.readBulkString();
+                return readBulkString();
             case RespArray.CODE:
-                return this.readArray();
+                return readArray();
             case RespCommandId.CODE:
-                return this.readCommandId();
+                return readCommandId();
             default:
                 throw new IOException("Invalid object code");
         }
@@ -106,7 +102,6 @@ public class RespReader implements AutoCloseable {
         byte symbol = readByte();
         List<Byte> symbols = new ArrayList<>();
         boolean isEndOfText = false;
-
         while (!isEndOfText) {
             while (symbol == CR) {
                 symbol = readByte();
@@ -117,10 +112,9 @@ public class RespReader implements AutoCloseable {
                     symbols.add(CR);
                 }
             }
-
             if (!isEndOfText) {
                 symbols.add(symbol);
-                symbol = this.readByte();
+                symbol = readByte();
             }
         }
         return new RespError(symbols);
@@ -134,7 +128,7 @@ public class RespReader implements AutoCloseable {
      */
     public RespBulkString readBulkString() throws IOException {
         int count = Integer.parseInt(new String(readBytesForInt(), StandardCharsets.UTF_8));
-        readLF();
+        skipLF();
         if (count == RespBulkString.NULL_STRING_SIZE) {
             return RespBulkString.NULL_STRING;
         }
@@ -142,8 +136,8 @@ public class RespReader implements AutoCloseable {
         if (data.length != count) {
             throw new EOFException("End of stream");
         }
-        readCR();
-        readLF();
+        skipCR();
+        skipLF();
         return new RespBulkString(data);
     }
 
@@ -155,7 +149,7 @@ public class RespReader implements AutoCloseable {
      */
     public RespArray readArray() throws IOException {
         int size = Integer.parseInt(new String(readBytesForInt(), StandardCharsets.UTF_8));
-        readLF();
+        skipLF();
         RespObject[] objects = new RespObject[size];
         for (int i = 0; i <size; i++) {
             objects[i] = readObject();
@@ -176,9 +170,8 @@ public class RespReader implements AutoCloseable {
             throw new EOFException("End of stream");
         }
         int commandId = ByteBuffer.wrap(bytes).getInt();
-        this.readCR();
-        this.readLF();
-
+        skipCR();
+        skipLF();
         return new RespCommandId(commandId);
     }
 
