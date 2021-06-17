@@ -4,6 +4,7 @@ import com.itmo.java.basics.exceptions.DatabaseException;
 import com.itmo.java.basics.initialization.InitializationContext;
 import com.itmo.java.basics.initialization.Initializer;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,28 +34,24 @@ public class DatabaseServerInitializer implements Initializer {
         if (!Files.exists(workPath)) {
             try {
                 Files.createDirectory(workPath);
+                return;
             } catch (IOException e) {
                 throw new DatabaseException("Failed to create directory " + workPath, e);
             }
         }
-
-        try (final Stream<Path> walk = Files.walk(workPath, 1)) {
-            List<Path> dbPaths = walk.filter(Files::isDirectory).collect(Collectors.toList());
-            dbPaths.remove(0);
-
-            for (final Path dbPath : dbPaths) {
-                final DatabaseInitializationContextImpl databaseInitializationContext
-                        = new DatabaseInitializationContextImpl(dbPath.getFileName().toString(), workPath);
-
-                dbInitializer.perform(
-                        new InitializationContextImpl(
-                                context.executionEnvironment(), databaseInitializationContext,
-                                context.currentTableContext(), context.currentSegmentContext()
-                        )
-                );
+        File[] dbDirectories = workPath.toFile().listFiles();
+        if (dbDirectories == null){
+            throw new DatabaseException(String.format("Can not formed files list from %s", workPath));
+        }
+        for (final File dbDirectory : dbDirectories){
+            if (!Files.isDirectory(dbDirectory.toPath())){
+                continue;
             }
-        } catch (IOException exception) {
-            throw new DatabaseException("Working directory walking error: " + workPath, exception);
+            dbInitializer.perform(InitializationContextImpl.builder()
+                    .executionEnvironment(context.executionEnvironment())
+                    .currentDatabaseContext(new DatabaseInitializationContextImpl(
+                            dbDirectory.getName(), workPath))
+                    .build());
         }
     }
 }
