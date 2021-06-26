@@ -51,7 +51,7 @@ public class ConfigLoader {
                     .serverConfig(new ServerConfig(host, Integer.parseInt(port)))
                     .dbConfig(new DatabaseConfig(workingPath))
                     .build();
-        } catch (IOException ignored) {
+        } catch (IOException e) {
             return DatabaseServerConfig
                     .builder()
                     .serverConfig(new ServerConfig(ServerConfig.DEFAULT_HOST, ServerConfig.DEFAULT_PORT))

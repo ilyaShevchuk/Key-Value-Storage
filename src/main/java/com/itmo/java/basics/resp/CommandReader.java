@@ -6,12 +6,9 @@ import com.itmo.java.basics.console.DatabaseCommands;
 import com.itmo.java.basics.console.ExecutionEnvironment;
 import com.itmo.java.protocol.RespReader;
 import com.itmo.java.protocol.model.RespArray;
-import com.itmo.java.protocol.model.RespCommandId;
 import com.itmo.java.protocol.model.RespObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class CommandReader implements AutoCloseable {
     private final RespReader reader;
@@ -36,11 +33,8 @@ public class CommandReader implements AutoCloseable {
      * @throws IllegalArgumentException если нет имени команды и id
      */
     public DatabaseCommand readCommand() throws IOException {
-//        if (!hasNextCommand()){
-//            throw new IOException("We dont have any command");
-//        }
         RespArray args = reader.readArray();
-        if (args.getObjects().size() < 2){
+        if (args.getObjects().size() < 2) {
             throw new IllegalArgumentException("Not enough args for command");
         }
         RespObject commandName = args.getObjects().get(DatabaseCommandArgPositions.COMMAND_NAME.getPositionIndex());

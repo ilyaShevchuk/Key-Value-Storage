@@ -13,13 +13,11 @@ import java.net.Socket;
  * С помощью {@link RespWriter} и {@link RespReader} читает/пишет в сокет
  */
 public class SocketKvsConnection implements KvsConnection {
-    ConnectionConfig config;
-    Socket socket;
-    RespWriter respWriter;
-    RespReader respReader;
+    private final Socket socket;
+    private final RespWriter respWriter;
+    private final RespReader respReader;
 
     public SocketKvsConnection(ConnectionConfig config) {
-        this.config = config;
         try {
             socket = new Socket(config.getHost(), config.getPort());
             respWriter = new RespWriter(socket.getOutputStream());

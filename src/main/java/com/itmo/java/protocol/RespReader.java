@@ -84,7 +84,7 @@ public class RespReader implements AutoCloseable {
             case RespBulkString.CODE:
                 return readBulkString();
             case RespArray.CODE:
-                return  readArray();
+                return readArray();
             case RespCommandId.CODE:
                 return readCommandId();
             default:
@@ -104,6 +104,7 @@ public class RespReader implements AutoCloseable {
         boolean textEnd = false;
         while (!textEnd) {
             while (symbol == CR) {
+
                 symbol = readByte();
 
                 if (symbol == LF) {

@@ -31,7 +31,6 @@ public class JavaSocketServerConnector implements Closeable {
      * Экзекьютор для выполнения ClientTask
      */
     private final ExecutorService clientIOWorkers = Executors.newSingleThreadExecutor();
-
     private final ServerSocket serverSocket;
     private final DatabaseServer databaseServer;
     private final ExecutorService connectionAcceptorExecutor = Executors.newSingleThreadExecutor();
@@ -111,14 +110,15 @@ public class JavaSocketServerConnector implements Closeable {
          */
         @Override
         public void run() {
-            try {
-                CommandReader reader = new CommandReader(new RespReader(clientSocket.getInputStream()), server.getEnv());
-                RespWriter writer = new RespWriter(clientSocket.getOutputStream());
+            try (CommandReader reader = new CommandReader(new RespReader(clientSocket.getInputStream()), server.getEnv());
+                 RespWriter writer = new RespWriter(clientSocket.getOutputStream())) {
                 while (reader.hasNextCommand()) {
                     DatabaseCommandResult result = server.executeNextCommand(reader.readCommand()).get();
                     writer.write(result.serialize());
                 }
             } catch (IOException | InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
