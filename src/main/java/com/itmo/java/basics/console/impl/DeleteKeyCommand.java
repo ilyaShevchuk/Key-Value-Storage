@@ -56,6 +56,9 @@ public class DeleteKeyCommand implements DatabaseCommand {
             deletedValue = database.get().read(
                     commandArgs.get(DatabaseCommandArgPositions.TABLE_NAME.getPositionIndex()).asString(),
                     commandArgs.get(DatabaseCommandArgPositions.KEY.getPositionIndex()).asString());
+            if (deletedValue.isEmpty()){
+                return DatabaseCommandResult.error("Key is'nt exist");
+            }
             database.get().delete(
                     commandArgs.get(DatabaseCommandArgPositions.TABLE_NAME.getPositionIndex()).asString(),
                     commandArgs.get(DatabaseCommandArgPositions.KEY.getPositionIndex()).asString());

@@ -15,6 +15,8 @@ public class RespBulkString implements RespObject {
 
     public static final int NULL_STRING_SIZE = -1;
 
+    public static final RespBulkString NULL_STRING = new RespBulkString(null);
+
     private final byte[] data;
 
     public RespBulkString(byte[] data) {
@@ -41,7 +43,7 @@ public class RespBulkString implements RespObject {
         if (data == null) {
             return null;
         } else {
-            return new String(data);
+            return new String(data, StandardCharsets.UTF_8);
         }
     }
 

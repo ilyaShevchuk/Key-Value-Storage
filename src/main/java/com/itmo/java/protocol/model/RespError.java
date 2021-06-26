@@ -2,6 +2,7 @@ package com.itmo.java.protocol.model;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 
 /**
  * Сообщение об ошибке в RESP протоколе
@@ -16,6 +17,15 @@ public class RespError implements RespObject {
 
     public RespError(byte[] message) {
         this.message = message;
+    }
+    public RespError(List<Byte> message) {
+        int symbolsCount = message.size();
+        byte[] bytes = new byte[symbolsCount];
+
+        for (int i = 0; i < symbolsCount; i++) {
+            bytes[i] = message.get(i);
+        }
+        this.message = bytes;
     }
 
     /**

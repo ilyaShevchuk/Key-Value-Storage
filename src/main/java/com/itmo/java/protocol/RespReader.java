@@ -1,14 +1,14 @@
 package com.itmo.java.protocol;
 
-import com.itmo.java.protocol.model.RespArray;
-import com.itmo.java.protocol.model.RespBulkString;
-import com.itmo.java.protocol.model.RespCommandId;
-import com.itmo.java.protocol.model.RespError;
-import com.itmo.java.protocol.model.RespObject;
+import com.itmo.java.protocol.model.*;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RespReader implements AutoCloseable {
 
@@ -17,17 +17,57 @@ public class RespReader implements AutoCloseable {
      */
     private static final byte CR = '\r';
     private static final byte LF = '\n';
+    private final InputStream is;
 
     public RespReader(InputStream is) {
-        //TODO implement
+        this.is = is;
+    }
+
+    private byte readByte() throws IOException {
+        final int symbol = is.read();
+
+        if (symbol == -1) {
+            throw new EOFException("End of stream");
+        }
+
+        return (byte) symbol;
+    }
+
+    private void skipCR() throws IOException {
+        if (readByte() != CR) {
+            throw new IOException("Wrong format");
+        }
+    }
+
+    private void skipLF() throws IOException {
+        if (readByte() != LF) {
+            throw new IOException("Wrong format");
+        }
+    }
+
+    private byte[] readBytesForInt() throws IOException {
+        byte symbol = readByte();
+        final List<Byte> symbols = new ArrayList<>();
+        while (symbol != CR) {
+            symbols.add(symbol);
+            symbol = readByte();
+        }
+
+        final int symbolsCount = symbols.size();
+        final byte[] bytes = new byte[symbolsCount];
+        for (int i = 0; i < symbolsCount; i++) {
+            bytes[i] = symbols.get(i);
+        }
+
+        return bytes;
     }
 
     /**
      * Есть ли следующий массив в стриме?
      */
     public boolean hasArray() throws IOException {
-        //TODO implement
-        return false;
+        int code = is.read();
+        return (code == RespArray.CODE);
     }
 
     /**
@@ -38,8 +78,18 @@ public class RespReader implements AutoCloseable {
      * @throws IOException  при ошибке чтения
      */
     public RespObject readObject() throws IOException {
-        //TODO implement
-        return null;
+        switch (readByte()) {
+            case RespError.CODE:
+                return readError();
+            case RespBulkString.CODE:
+                return readBulkString();
+            case RespArray.CODE:
+                return readArray();
+            case RespCommandId.CODE:
+                return readCommandId();
+            default:
+                throw new IOException("Invalid object code");
+        }
     }
 
     /**
@@ -49,8 +99,26 @@ public class RespReader implements AutoCloseable {
      * @throws IOException  при ошибке чтения
      */
     public RespError readError() throws IOException {
-        //TODO implement
-        return null;
+        byte symbol = readByte();
+        List<Byte> symbols = new ArrayList<>();
+        boolean textEnd = false;
+        while (!textEnd) {
+            while (symbol == CR) {
+
+                symbol = readByte();
+
+                if (symbol == LF) {
+                    textEnd = true;
+                } else {
+                    symbols.add(CR);
+                }
+            }
+            if (!textEnd) {
+                symbols.add(symbol);
+                symbol = readByte();
+            }
+        }
+        return new RespError(symbols);
     }
 
     /**
@@ -60,8 +128,18 @@ public class RespReader implements AutoCloseable {
      * @throws IOException  при ошибке чтения
      */
     public RespBulkString readBulkString() throws IOException {
-        //TODO implement
-        return null;
+        int count = Integer.parseInt(new String(readBytesForInt(), StandardCharsets.UTF_8));
+        skipLF();
+        if (count == RespBulkString.NULL_STRING_SIZE) {
+            return RespBulkString.NULL_STRING;
+        }
+        final byte[] data = is.readNBytes(count);
+        if (data.length != count) {
+            throw new EOFException("End of stream");
+        }
+        skipCR();
+        skipLF();
+        return new RespBulkString(data);
     }
 
     /**
@@ -71,8 +149,13 @@ public class RespReader implements AutoCloseable {
      * @throws IOException  при ошибке чтения
      */
     public RespArray readArray() throws IOException {
-        //TODO implement
-        return null;
+        int size = Integer.parseInt(new String(readBytesForInt(), StandardCharsets.UTF_8));
+        skipLF();
+        RespObject[] objects = new RespObject[size];
+        for (int i = 0; i < size; i++) {
+            objects[i] = readObject();
+        }
+        return new RespArray(objects);
     }
 
     /**
@@ -82,13 +165,20 @@ public class RespReader implements AutoCloseable {
      * @throws IOException  при ошибке чтения
      */
     public RespCommandId readCommandId() throws IOException {
-        //TODO implement
-        return null;
+        int intSize = 4;
+        byte[] bytes = is.readNBytes(intSize);
+        if (bytes.length != intSize) {
+            throw new EOFException("End of stream");
+        }
+        int commandId = ByteBuffer.wrap(bytes).getInt();
+        skipCR();
+        skipLF();
+        return new RespCommandId(commandId);
     }
 
 
     @Override
     public void close() throws IOException {
-        //TODO implement
+        is.close();
     }
 }

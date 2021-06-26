@@ -22,6 +22,9 @@ public class RespArray implements RespObject {
     public RespArray(RespObject... objects) {
         this.objects = Arrays.asList(objects);
     }
+    public RespArray(List<RespObject> objects){
+        this.objects = objects;
+    }
 
     /**
      * Ошибка ли это? Ответ - нет

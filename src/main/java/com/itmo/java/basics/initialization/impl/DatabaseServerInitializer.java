@@ -3,14 +3,14 @@ package com.itmo.java.basics.initialization.impl;
 import com.itmo.java.basics.exceptions.DatabaseException;
 import com.itmo.java.basics.initialization.InitializationContext;
 import com.itmo.java.basics.initialization.Initializer;
-import com.itmo.java.basics.logic.Database;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class DatabaseServerInitializer implements Initializer {
 
@@ -34,20 +34,24 @@ public class DatabaseServerInitializer implements Initializer {
         if (!Files.exists(workPath)) {
             try {
                 Files.createDirectory(workPath);
+                return;
             } catch (IOException e) {
                 throw new DatabaseException("Failed to create directory " + workPath, e);
             }
         }
-
-        for (final File fileEntry : Objects.requireNonNull(workPath.toFile().listFiles())) {
-            if (!Files.exists(fileEntry.toPath())) {
-                throw new DatabaseException("Can not open potential database with name " + fileEntry);
+        File[] dbDirectories = workPath.toFile().listFiles();
+        if (dbDirectories == null){
+            throw new DatabaseException(String.format("Can not formed files list from %s", workPath));
+        }
+        for (final File dbDirectory : dbDirectories){
+            if (!Files.isDirectory(dbDirectory.toPath())){
+                continue;
             }
-            Optional<Database> db = context.executionEnvironment().getDatabase(fileEntry.getName());
-            InitializationContext newContext = InitializationContextImpl.builder().currentDatabaseContext(
-                    new DatabaseInitializationContextImpl(fileEntry.getName(), workPath)).executionEnvironment(
-                    context.executionEnvironment()).build();
-            dbInitializer.perform(newContext);
+            dbInitializer.perform(InitializationContextImpl.builder()
+                    .executionEnvironment(context.executionEnvironment())
+                    .currentDatabaseContext(new DatabaseInitializationContextImpl(
+                            dbDirectory.getName(), workPath))
+                    .build());
         }
     }
 }

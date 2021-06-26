@@ -25,16 +25,15 @@ public class SimpleKvsClient implements KvsClient {
 
     private RespObject generateExceptionByCommand(KvsCommand command, String exceptionMessage)
             throws DatabaseExecutionException {
-        RespObject result;
         try {
-            result = connectionSupplier.get().send(command.getCommandId(), command.serialize());
+            RespObject result = connectionSupplier.get().send(command.getCommandId(), command.serialize());
+            if (result.isError()) {
+                throw new DatabaseExecutionException(result.asString());
+            }
+            return result;
         } catch (ConnectionException e) {
             throw new DatabaseExecutionException(exceptionMessage, e);
         }
-        if (result.isError()) {
-            throw new DatabaseExecutionException(result.asString());
-        }
-        return result;
     }
 
     @Override
